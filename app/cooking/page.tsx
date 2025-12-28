@@ -6,6 +6,7 @@ import { Shell } from "../components/Shell";
 import { Recipe } from "../types";
 import { useTimers } from "../context/TimerContext";
 import { ChatPanel } from "../components/ChatPanel"; 
+import { Lightbulb, TrendingUp } from "lucide-react"; // Added Icons for the new features
 
 export default function CookingPage() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -29,11 +30,55 @@ export default function CookingPage() {
     stepStartTime.current = Date.now();
   }, [currentStepIndex]);
 
+  // --- 1. SMART ENGINEERING: USER PERSISTENCE (Long-Term Memory) ---
+  // Saves the machine learning data (pacingMultiplier) to local storage
+  // so the system "remembers" if the user is fast/slow for future sessions.
+  useEffect(() => {
+    if (pacingMultiplier !== 1.0) {
+        localStorage.setItem("userVelocityProfile", pacingMultiplier.toString());
+        // For debugging/demo purposes:
+        console.log("💾 Updated User Velocity Profile:", pacingMultiplier);
+    }
+  }, [pacingMultiplier]);
+
   // --- DERIVED STATE ---
   const currentStep = recipe?.steps[currentStepIndex];
   const nextStep = recipe?.steps[currentStepIndex + 1];
   const isLastStep = recipe ? currentStepIndex === recipe.steps.length - 1 : false;
   const activeTimer = timers.find((t) => t.id === currentStep?.id);
+
+  // --- 2. SMART ENGINEERING: PARALLEL OPTIMIZATION (DAG Logic) ---
+  // Analyzes the dependency graph: If current step is Passive (Waiting > 2min)
+  // AND next step is Active (Manual labor), suggest parallel execution.
+  const getOptimizationSuggestion = () => {
+    if (!activeTimer || !nextStep) return null;
+
+    const isLongWait = activeTimer.status === 'running' && activeTimer.remainingSeconds > 120; // > 2 mins
+    const isNextManual = !nextStep.isFixedTime; // Assuming fixedTime = physics, !fixedTime = manual
+
+    if (isLongWait && isNextManual) {
+        return (
+            <div className="mt-8 mb-4 bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg animate-pulse shadow-sm">
+                <div className="flex items-start gap-3">
+                    <Lightbulb className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-1" />
+                    <div>
+                        <h4 className="font-bold text-indigo-900 text-sm uppercase tracking-wide">
+                            Smart Optimization Detected
+                        </h4>
+                        <p className="text-indigo-800 text-sm mt-1">
+                            While waiting for the timer ({Math.floor(activeTimer.remainingSeconds / 60)}m), 
+                            you have enough time to start the next step.
+                        </p>
+                        <div className="mt-2 inline-block bg-white border border-indigo-200 px-3 py-1 rounded text-sm font-semibold text-indigo-700">
+                            Suggested Action: {nextStep.instruction}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    return null;
+  };
 
   // --- NAVIGATION COMMANDS ---
   const handleNext = useCallback(() => {
@@ -79,18 +124,17 @@ export default function CookingPage() {
     }
   }, [activeTimer, toggleTimer]);
 
-  // --- REFS FOR STABLE ACCESS (THE FIX) ---
+  // --- REFS FOR STABLE ACCESS ---
   const handleNextRef = useRef(handleNext);
   const handleBackRef = useRef(handleBack);
   const handleStartTimerRef = useRef(handleStartTimer);
-  const handleToggleTimerRef = useRef(handleToggleTimer); // NEW REF
+  const handleToggleTimerRef = useRef(handleToggleTimer);
 
-  // Update refs on every render
   useEffect(() => {
     handleNextRef.current = handleNext;
     handleBackRef.current = handleBack;
     handleStartTimerRef.current = handleStartTimer;
-    handleToggleTimerRef.current = handleToggleTimer; // Update new ref
+    handleToggleTimerRef.current = handleToggleTimer;
   }, [handleNext, handleBack, handleStartTimer, handleToggleTimer]);
 
 
@@ -110,53 +154,30 @@ export default function CookingPage() {
     
     recognition.onend = () => {
       setIsListening(false);
-      // Aggressive restart logic
       setTimeout(() => { 
         try { recognition.start(); } catch (e) { /* Already started */ } 
       }, 500);
     };
 
     recognition.onresult = (event: any) => {
-      // Always get the *newest* result
       const resultIndex = event.results.length - 1;
       const transcript = event.results[resultIndex][0].transcript.toLowerCase().trim();
       
       setLastHeard(transcript); 
       console.log("🎤 Heard:", transcript);
 
-      // USE REFS TO CALL FUNCTIONS
-      if (
-        transcript.includes("next") || 
-        transcript.includes("done") || 
-        transcript.includes("continue")
-      ) {
+      if (transcript.includes("next") || transcript.includes("done") || transcript.includes("continue")) {
         handleNextRef.current(); 
       } 
-      else if (
-        transcript.includes("back") || 
-        transcript.includes("previous") 
-       
-      ) {
+      else if (transcript.includes("back") || transcript.includes("previous")) {
         handleBackRef.current(); 
       } 
-      else if (
-        transcript.includes("start") || 
-        transcript.includes("begin") || 
-        transcript.includes("clock")
-      ) {
-        // "Start Timer" checks for duration first
+      else if (transcript.includes("start") || transcript.includes("begin") || transcript.includes("clock")) {
         handleStartTimerRef.current(); 
       }
-      // NEW: Stop/Pause/Resume Logic
-      else if (
-        transcript.includes("stop") || 
-        transcript.includes("pause") || 
-        transcript.includes("resume") ||
-        transcript.includes("timer") // Catch-all for "timer" if simple match fails
-      ) {
-        // Only toggle if there is an active timer to toggle
+      else if (transcript.includes("stop") || transcript.includes("pause") || transcript.includes("resume") || transcript.includes("timer")) {
         if (transcript.includes("start") || transcript.includes("begin")) {
-            // Safety: if they said "Start timer", don't toggle, handled above
+            // Safety
         } else {
             handleToggleTimerRef.current();
         }
@@ -165,13 +186,11 @@ export default function CookingPage() {
 
     try { recognition.start(); } catch (e) {}
 
-    // Cleanup ONLY on unmount (page leave)
     return () => {
       recognition.onend = null;
       recognition.stop();
     };
-  }, []); // <--- EMPTY DEPENDENCY ARRAY = STABLE MIC
-  // ------------------------------------
+  }, []); 
 
   if (!recipe || !currentStep) return null;
 
@@ -200,6 +219,7 @@ export default function CookingPage() {
         currentStep={currentStep.instruction}
       />
 
+      {/* Mic Status & Debug */}
       <div className="absolute top-0 right-0 p-4 flex flex-col items-end gap-2 z-50">
         {isListening ? (
           <div className="flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold animate-pulse border border-red-200 shadow-sm">
@@ -214,6 +234,14 @@ export default function CookingPage() {
           <div className="bg-stone-800 text-white text-xs px-3 py-2 rounded-lg shadow-lg opacity-80 max-w-[150px] truncate transition-all">
             " {lastHeard} "
           </div>
+        )}
+
+        {/* --- DEMO: Show Velocity Factor --- */}
+        {pacingMultiplier !== 1.0 && (
+             <div className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-1 rounded text-[10px] font-mono border border-blue-100">
+                <TrendingUp className="w-3 h-3" />
+                Velocity: {pacingMultiplier.toFixed(2)}x
+             </div>
         )}
       </div>
 
@@ -243,6 +271,9 @@ export default function CookingPage() {
           <h1 className="text-4xl md:text-6xl font-medium text-stone-900 leading-tight">
             {currentStep.instruction}
           </h1>
+
+          {/* --- OPTIMIZATION UI INJECTION --- */}
+          {getOptimizationSuggestion()}
 
           {currentStep.duration && (
             <div className="pt-4">
@@ -278,9 +309,10 @@ export default function CookingPage() {
              <span className="text-stone-500 group-hover:text-stone-800">Ask the Chef...</span>
           </button>
 
+          {/* Existing Parallel Tasks UI */}
           {timers.length > 0 && timers.some(t => t.id !== currentStep.id) && (
              <div className="mb-12">
-               <h3 className="text-xs uppercase tracking-widest text-stone-400 font-bold mb-4">Parallel Tasks</h3>
+               <h3 className="text-xs uppercase tracking-widest text-stone-400 font-bold mb-4">Running in Background</h3>
                <div className="space-y-3">
                  {timers.filter(t => t.id !== currentStep.id).map(t => (
                    <div key={t.id} className={`p-4 rounded-xl border flex justify-between items-center ${t.status === 'finished' ? 'bg-amber-50 border-amber-200' : 'bg-white border-stone-200'}`}>
@@ -307,7 +339,7 @@ export default function CookingPage() {
                 
                 {nextStep.duration && !nextStep.isFixedTime && pacingMultiplier !== 1.0 && (
                   <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-sm font-semibold animate-pulse">
-                    <span>⚡ System Estimate: {getAdjustedTime(nextStep.duration, nextStep.isFixedTime)} (was {nextStep.duration})</span>
+                    <span>⚡ Adjusted for you: {getAdjustedTime(nextStep.duration, nextStep.isFixedTime)}</span>
                   </div>
                 )}
               </div>
