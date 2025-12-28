@@ -1,3 +1,11 @@
+export interface Step {
+  id: number;
+  instruction: string;
+  duration?: string; 
+  isFixedTime?: boolean; // NEW: True = Physics (Boil), False = Labor (Chop)
+}
+
+
 export interface Ingredient {
   name: string;
   amount?: string;
