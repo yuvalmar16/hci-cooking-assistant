@@ -88,6 +88,11 @@ export default function CookingPage() {
 
   const router = useRouter();
   const { timers, addTimer, toggleTimer, removeTimer, pacingMultiplier, recordStepTime } = useTimers();
+  const activeTimer = recipe && recipe.steps[currentStepIndex] 
+      // FIX: Ensure ID comparison matches types (String vs Number)
+      ? timers.find((t) => t.id === String(recipe.steps[currentStepIndex].id)) 
+      : undefined;
+
   const stepStartTime = useRef<number>(Date.now()); 
   
   const globalRecognitionRef = useRef<any>(null);
@@ -123,7 +128,6 @@ export default function CookingPage() {
   const currentStep = recipe?.steps[currentStepIndex];
   const nextStep = recipe?.steps[currentStepIndex + 1];
   const isLastStep = recipe ? currentStepIndex === recipe.steps.length - 1 : false;
-  const activeTimer = timers.find((t) => t.id === currentStep?.id);
 
   const totalRemainingMinutes = useMemo(() => {
     if (!recipe || !recipe.steps) return 0;
@@ -136,7 +140,8 @@ export default function CookingPage() {
         const stepDuration = parseDuration(step.duration);
 
         if (index === currentStepIndex) {
-            if (activeTimer && activeTimer.id === step.id && activeTimer.status !== 'finished') {
+            // FIX: String conversion for ID comparison
+            if (activeTimer && activeTimer.id === String(step.id) && activeTimer.status !== 'finished') {
                 totalSeconds += activeTimer.remainingSeconds;
             } else {
                 totalSeconds += step.isFixedTime ? stepDuration : (stepDuration * safeMultiplier);
@@ -152,7 +157,7 @@ export default function CookingPage() {
   }, [recipe, currentStepIndex, pacingMultiplier, activeTimer, now]); 
 
   const getOptimizationSuggestion = () => {
-    // FIX IS HERE: Added check for !currentStep
+    // FIX: Added !currentStep check to satisfy TypeScript
     if (!activeTimer || !nextStep || !currentStep) return null;
     
     const isLongWait = activeTimer.status === 'running' && activeTimer.remainingSeconds > 120; 
@@ -207,8 +212,11 @@ export default function CookingPage() {
 
     if (duration === 0) { alert("No time limit detected for this step."); return; }
     
-    if (!activeTimer) addTimer(currentStep.id, `Step ${currentStepIndex + 1}`, duration);
-    else if (activeTimer.status === "paused") toggleTimer(currentStep.id);
+    // FIX: String conversion for ID
+    const stepIdStr = String(currentStep.id);
+
+    if (!activeTimer) addTimer(stepIdStr, `Step ${currentStepIndex + 1}`, duration);
+    else if (activeTimer.status === "paused") toggleTimer(stepIdStr);
   }, [currentStep, activeTimer, addTimer, toggleTimer, currentStepIndex]);
 
   const handleToggleTimer = useCallback(() => {
@@ -409,12 +417,14 @@ export default function CookingPage() {
              <span className="text-stone-500 group-hover:text-stone-800">{handsFreeMode ? 'Say "Hey Susie"...' : 'Click to Ask...'}</span>
           </button>
           
-           {timers.length > 0 && timers.some(t => t.id !== currentStep.id) && (
+           {timers.length > 0 && timers.some(t => t.id !== String(currentStep.id)) && (
              <div className="mb-12">
                <h3 className="text-xs uppercase tracking-widest text-stone-500 font-bold mb-4 bg-white/50 inline-block px-1 rounded">Running in Background</h3>
                <div className="space-y-3">
-                 {timers.filter(t => t.id !== currentStep.id).map(t => {
-                   const relevantStep = recipe.steps.find(s => s.id === t.id);
+                 {/* FIX: Filter with String conversion */}
+                 {timers.filter(t => t.id !== String(currentStep.id)).map(t => {
+                   // FIX: Find relevant step with String conversion
+                   const relevantStep = recipe.steps.find(s => String(s.id) === t.id);
                    const stepName = relevantStep ? relevantStep.instruction : "Background Task";
 
                    return (
