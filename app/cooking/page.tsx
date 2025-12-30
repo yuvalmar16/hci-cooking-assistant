@@ -8,7 +8,6 @@ import { useTimers } from "../context/TimerContext";
 import { ChatPanel } from "../components/ChatPanel"; 
 import { Lightbulb, TrendingUp, Mic, MicOff, CheckCircle, Utensils, Info } from "lucide-react";
 
-// --- IMAGE GENERATOR HELPER ---
 const getRecipeImage = (title: string): string => {
   const t = title.toLowerCase();
   if (t.includes("sushi") || t.includes("roll")) return "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200";
@@ -28,7 +27,6 @@ const getRecipeImage = (title: string): string => {
   return "https://media.istockphoto.com/id/887636042/photo/the-start-of-something-delicious.jpg?s=612x612&w=0&k=20&c=2T_BCJQhhkfohcbcDZ14OV8rPStICJ9Q1_YjGUW2wCo=";
 };
 
-// --- DATA PARSING HELPER ---
 const parseDuration = (val: any): number => {
   if (typeof val === 'number') return val;
   if (typeof val === 'string') {
@@ -40,10 +38,8 @@ const parseDuration = (val: any): number => {
   return 0;
 };
 
-// --- TIMER LOGIC ---
 const shouldShowTimer = (step: Step): boolean => {
   if (step.isFixedTime) return true;
-
   const text = step.instruction.toLowerCase();
   const cookingKeywords = [
     "boil", "fry", "bake", "roast", "simmer", "steam", "poach", 
@@ -51,24 +47,16 @@ const shouldShowTimer = (step: Step): boolean => {
     "wait", "rest", "marinate", "chill", "freeze", "cool"
   ];
   const timeKeywords = ["minutes", "mins", "hour", "hrs", "seconds"];
-
   const isCookingAction = cookingKeywords.some(k => text.includes(k));
   const hasTimeMention = timeKeywords.some(k => text.includes(k));
-
   return isCookingAction || hasTimeMention;
 };
 
-// --- NEW: DEPENDENCY CHECKER (Fixes the "Burger" bug) ---
 const hasIngredientDependency = (currentText: string, nextText: string): boolean => {
-  // 1. Clean texts
   const cleanCurrent = currentText.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "");
   const cleanNext = nextText.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "");
-
-  // 2. Tokenize
   const currentWords = cleanCurrent.split(/\s+/);
   const nextWords = cleanNext.split(/\s+/);
-
-  // 3. Ignored Words (Verbs & Prepositions)
   const ignoredWords = new Set([
     "the", "a", "an", "in", "on", "at", "to", "for", "of", "with", "and", "or",
     "place", "put", "add", "transfer", "remove", "serve", "plate", "garnish",
@@ -77,15 +65,13 @@ const hasIngredientDependency = (currentText: string, nextText: string): boolean
     "into", "onto", "from", "over", "under", "through"
   ]);
 
-  // 4. Intersection Check
   for (const word of nextWords) {
       if (word.length < 3) continue; 
       if (ignoredWords.has(word)) continue; 
-      if (currentWords.includes(word)) return true; // Dependency found (e.g. "Burger")
+      if (currentWords.includes(word)) return true;
   }
   return false;
 };
-
 
 export default function CookingPage() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -139,7 +125,6 @@ export default function CookingPage() {
   const isLastStep = recipe ? currentStepIndex === recipe.steps.length - 1 : false;
   const activeTimer = timers.find((t) => t.id === currentStep?.id);
 
-  // --- TOTAL TIME CALCULATION ---
   const totalRemainingMinutes = useMemo(() => {
     if (!recipe || !recipe.steps) return 0;
     
@@ -166,17 +151,12 @@ export default function CookingPage() {
 
   }, [recipe, currentStepIndex, pacingMultiplier, activeTimer, now]); 
 
-  // --- UPDATED SMART OPTIMIZATION ENGINE ---
   const getOptimizationSuggestion = () => {
-    if (!activeTimer || !nextStep) return null;
+    // FIX IS HERE: Added check for !currentStep
+    if (!activeTimer || !nextStep || !currentStep) return null;
     
-    // 1. Is the user waiting? (> 2 mins)
     const isLongWait = activeTimer.status === 'running' && activeTimer.remainingSeconds > 120; 
-    
-    // 2. Is the next step active labor? (Not another timer)
     const isNextManual = !nextStep.isFixedTime; 
-
-    // 3. SAFETY: Is the next step logically dependent on the current one?
     const hasDependency = hasIngredientDependency(currentStep.instruction, nextStep.instruction);
 
     if (isLongWait && isNextManual && !hasDependency) {
