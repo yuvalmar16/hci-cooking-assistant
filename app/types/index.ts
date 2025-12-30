@@ -13,10 +13,11 @@ export interface Ingredient {
 }
 
 export interface Step {
-  id: number;
+  id: string | number;     // FIX: Allow both string ("s1") and number (1)
   instruction: string;
-  duration?: string; // e.g., "5 mins"
-  timerSeconds?: number; // e.g., 300
+  duration?: string;       // e.g., "5 mins"
+  timerSeconds?: number;   
+  isFixedTime?: boolean;   // True = Physics (Boil), False = Labor (Chop)
 }
 
 export interface Recipe {
@@ -25,4 +26,5 @@ export interface Recipe {
   ingredients: Ingredient[];
   steps: Step[];
   totalTime: string;
+  imageUrl?: string;       // FIX: Added this so the build doesn't fail
 }
