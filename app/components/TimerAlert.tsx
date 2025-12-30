@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 
 export function TimerAlert() {
   const { timers, removeTimer } = useTimers();
-  const [alertedIds, setAlertedIds] = useState<Set<number>>(new Set());
+  
+  // FIX: Changed from Set<number> to Set<string> because timer IDs are now strings
+  const [alertedIds, setAlertedIds] = useState<Set<string>>(new Set());
   
   const finishedTimers = timers.filter((t) => t.status === "finished");
 
@@ -47,6 +49,7 @@ export function TimerAlert() {
   };
 
   useEffect(() => {
+    // FIX: t.id is a string, so alertedIds.has(t.id) is now valid
     const newFinishedTimers = finishedTimers.filter(t => !alertedIds.has(t.id));
 
     if (newFinishedTimers.length > 0) {
@@ -63,11 +66,11 @@ export function TimerAlert() {
   if (finishedTimers.length === 0) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 flex flex-col gap-2 p-4 animate-slide-down">
+    <div className="fixed top-0 left-0 right-0 z-50 flex flex-col gap-2 p-4 animate-slide-down pointer-events-none">
       {finishedTimers.map((timer) => (
         <div
           key={timer.id}
-          className="mx-auto max-w-lg w-full bg-amber-100 border-l-8 border-amber-500 shadow-xl rounded-r-xl p-4 flex items-center justify-between"
+          className="mx-auto max-w-lg w-full bg-amber-100 border-l-8 border-amber-500 shadow-xl rounded-r-xl p-4 flex items-center justify-between pointer-events-auto"
         >
           <div className="flex items-center gap-4">
             <div className="bg-amber-200 p-2 rounded-full text-amber-700 animate-bounce-slow">
