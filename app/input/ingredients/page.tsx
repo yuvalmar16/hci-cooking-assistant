@@ -63,7 +63,7 @@ export default function IngredientsPage() {
         />
 
         {/* Chips Container */}
-        <div className="flex flex-wrap gap-3 min-h-[100px]">
+        <div className="flex flex-wrap gap-3 min-h-25">
           {ingredients.map((ing, index) => (
             <span
               key={index}

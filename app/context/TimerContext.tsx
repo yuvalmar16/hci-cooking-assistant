@@ -1,80 +1,98 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 
 interface Timer {
-  id: number;
+  id: string; // Changed to string for better compatibility (e.g. "s1", "uuid")
   label: string;
-  durationSeconds: number;
   remainingSeconds: number;
-  status: "idle" | "running" | "paused" | "finished";
+  originalDuration: number; // Useful for progress bars
+  status: "running" | "paused" | "finished";
 }
 
 interface TimerContextType {
   timers: Timer[];
+  addTimer: (id: string, label: string, duration: string | number) => void;
+  toggleTimer: (id: string) => void;
+  removeTimer: (id: string) => void;
   pacingMultiplier: number;
-  addTimer: (id: number, label: string, durationStr: string) => void;
-  toggleTimer: (id: number) => void;
-  removeTimer: (id: number) => void;
-  recordStepTime: (expectedDurationStr: string, actualSeconds: number, isFixedTime?: boolean) => void;
+  recordStepTime: (expected: string | number, actual: number, isFixedTime?: boolean) => void;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
+// --- HELPER: Safe Duration Parser ---
+// Handles both API numbers (seconds) and text ("5 mins")
+const parseDuration = (val: string | number): number => {
+  if (typeof val === "number") return val;
+  
+  if (typeof val === "string") {
+    const s = val.toLowerCase();
+    const num = parseInt(s);
+    if (isNaN(num)) return 0;
+    
+    if (s.includes("min")) return num * 60;
+    if (s.includes("hour") || s.includes("hr")) return num * 3600;
+    return num; // Default to seconds if just a string number
+  }
+  
+  return 0;
+};
+
 export function TimerProvider({ children }: { children: ReactNode }) {
   const [timers, setTimers] = useState<Timer[]>([]);
-  const [pacingMultiplier, setPacingMultiplier] = useState(1.0); 
+  const [pacingMultiplier, setPacingMultiplier] = useState(1.0);
 
-  const parseDuration = (str: string): number => {
-    if (!str) return 0;
-    const num = parseInt(str);
-    if (isNaN(num)) return 0;
-    if (str.includes("min")) return num * 60;
-    if (str.includes("hour") || str.includes("hr")) return num * 3600;
-    return 300; 
-  };
-
-  // --- ALGORITHM: Adaptive Velocity Tracking ---
-  const recordStepTime = (expectedDurationStr: string, actualSeconds: number, isFixedTime?: boolean) => {
-    // 1. SAFETY GUARD: If this is a physics task (Boiling), DO NOT learn from it.
-    if (isFixedTime) {
-       console.log("Skipping adaptation: Physics-based task detected.");
-       return;
+  // --- PERSISTENCE: Load Velocity Profile ---
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("userVelocityProfile");
+      if (stored) {
+        const val = parseFloat(stored);
+        if (!isNaN(val) && val > 0) setPacingMultiplier(val);
+      }
     }
+  }, []);
 
-    const expectedSeconds = parseDuration(expectedDurationStr);
-    
-    // Ignore invalid data or accidental clicks (< 5s)
-    if (expectedSeconds === 0 || actualSeconds < 5) return;
+  // --- TICKER: Runs every second ---
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimers((prev) =>
+        prev.map((t) => {
+          if (t.status !== "running") return t;
+          if (t.remainingSeconds <= 0) return { ...t, status: "finished", remainingSeconds: 0 };
+          return { ...t, remainingSeconds: t.remainingSeconds - 1 };
+        })
+      );
+    }, 1000);
 
-    const currentRatio = actualSeconds / expectedSeconds;
-    
-    // Clamp to avoid wild swings (e.g. user walked away)
-    const clampedRatio = Math.min(Math.max(currentRatio, 0.5), 3.0);
+    return () => clearInterval(interval);
+  }, []);
 
-    // Weighted Moving Average: 70% History, 30% New Data
-    setPacingMultiplier((prev) => parseFloat(((prev * 0.7) + (clampedRatio * 0.3)).toFixed(2)));
-  };
-  // ---------------------------------------------
+  // --- ACTIONS ---
 
-  const addTimer = (id: number, label: string, durationStr: string) => {
-    if (timers.find((t) => t.id === id)) return;
-    
-    const seconds = parseDuration(durationStr);
-    
-    setTimers((prev) => [
-      ...prev,
-      {
-        id,
-        label,
-        durationSeconds: seconds,
-        remainingSeconds: seconds,
-        status: "running", 
-      },
-    ]);
-  };
+  const addTimer = useCallback((id: string, label: string, duration: string | number) => {
+    // Prevent duplicates
+    setTimers((prev) => {
+      if (prev.find((t) => t.id === id)) return prev;
+      
+      const seconds = parseDuration(duration);
+      if (seconds <= 0) return prev; // Don't add invalid timers
 
-  const toggleTimer = (id: number) => {
+      return [
+        ...prev,
+        {
+          id,
+          label,
+          remainingSeconds: seconds,
+          originalDuration: seconds,
+          status: "running",
+        },
+      ];
+    });
+  }, []);
+
+  const toggleTimer = useCallback((id: string) => {
     setTimers((prev) =>
       prev.map((t) =>
         t.id === id
@@ -82,24 +100,39 @@ export function TimerProvider({ children }: { children: ReactNode }) {
           : t
       )
     );
-  };
-  
-  const removeTimer = (id: number) => {
+  }, []);
+
+  const removeTimer = useCallback((id: string) => {
     setTimers((prev) => prev.filter((t) => t.id !== id));
-  };
+  }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimers((prev) =>
-        prev.map((t) => {
-          if (t.status !== "running") return t;
-          if (t.remainingSeconds <= 0) return { ...t, status: "finished" };
-          return { ...t, remainingSeconds: t.remainingSeconds - 1 };
-        })
-      );
-    }, 1000);
+  // --- ALGORITHM: Adaptive Velocity Tracking ---
+  const recordStepTime = useCallback((expected: string | number, actual: number, isFixedTime?: boolean) => {
+    // 1. SAFETY GUARD: If this is a physics task (Boiling), DO NOT learn from it.
+    if (isFixedTime) {
+       console.log("Skipping adaptation: Physics-based task.");
+       return;
+    }
 
-    return () => clearInterval(interval);
+    const expectedSeconds = parseDuration(expected);
+    
+    // Ignore invalid data or accidental clicks (< 5s)
+    if (expectedSeconds <= 0 || actual < 5) return;
+
+    const currentRatio = actual / expectedSeconds;
+    
+    // Clamp to avoid wild swings (e.g. user walked away)
+    const clampedRatio = Math.min(Math.max(currentRatio, 0.5), 3.0);
+
+    // Weighted Moving Average: 70% History, 30% New Data
+    setPacingMultiplier((prev) => {
+        const newMultiplier = parseFloat(((prev * 0.7) + (clampedRatio * 0.3)).toFixed(2));
+        // Save to storage immediately
+        if (typeof window !== "undefined") {
+            localStorage.setItem("userVelocityProfile", newMultiplier.toString());
+        }
+        return newMultiplier;
+    });
   }, []);
 
   return (

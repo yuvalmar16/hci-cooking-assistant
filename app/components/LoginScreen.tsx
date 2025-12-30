@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { ChefHat } from "lucide-react"; // הוספתי אייקון נחמד אם תרצה, אם לא - תמחק את השורה הזו
 
 export function LoginScreen() {
   const [name, setName] = useState("");
@@ -25,8 +26,23 @@ export function LoginScreen() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-8 fade-in">
-      <label htmlFor="name" className="text-4xl md:text-5xl font-medium text-stone-800 text-center leading-tight">
+    <div className="flex flex-col items-center justify-center space-y-8 fade-in text-center">
+      
+      {/* --- NEW WELCOME TITLE --- */}
+      <div className="space-y-2 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex items-center justify-center gap-2 text-emerald-600 mb-2">
+           <ChefHat className="w-8 h-8" />
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-emerald-700 tracking-tight">
+          Hello, Welcome to Souzie 
+        </h1>
+        <p className="text-stone-400 text-sm font-medium">
+          Your AI-Powered Cognitive Sous-Chef
+        </p>
+      </div>
+      {/* ------------------------- */}
+
+      <label htmlFor="name" className="text-4xl md:text-5xl font-medium text-stone-800 leading-tight">
         What should I call you?
       </label>
 

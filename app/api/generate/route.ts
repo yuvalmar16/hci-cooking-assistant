@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { openai, SYSTEM_PROMPT, checkBudget } from "../../lib/openai";
-import { Recipe } from "../../types";
 
 const USE_MOCK_DATA = false; 
 
@@ -9,13 +8,17 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { mode, data } = body;
 
-    // --- MOCK MODE ---
+    // --- MOCK DATA (Optional) ---
     if (USE_MOCK_DATA) {
-      // (Keep your mock data if you wish, or remove it. 
-      // If you keep it, add isFixedTime: true to the boiling step.)
-      return NextResponse.json({ /* ... mock recipe ... */ });
+      return NextResponse.json({ 
+        title: "Mock Pasta",
+        steps: [
+            { id: 1, instruction: "Boil water", duration: 600, isFixedTime: true },
+            { id: 2, instruction: "Chop onions", duration: 300, isFixedTime: false }
+        ]
+      });
     }
-    // -----------------
+    // ----------------------------
 
     if (!data) return NextResponse.json({ error: "No data provided" }, { status: 400 });
     checkBudget(data);
@@ -24,7 +27,7 @@ export async function POST(request: Request) {
       ? `I have these ingredients: ${data}. Create a simple, comfort-food recipe using mostly these. Return ONLY valid JSON matching the Recipe schema.`
       : `Simplify this recipe text into calm, clear steps: "${data}". Return ONLY valid JSON matching the Recipe schema.`;
 
-    // UPDATED SCHEMA: Includes "isFixedTime" explanation
+    // *** THE FIX IS HERE: Changed duration to Number (seconds) ***
     const schemaStructure = `
     {
       "title": "String",
@@ -35,8 +38,8 @@ export async function POST(request: Request) {
         { 
           "id": Number, 
           "instruction": "String", 
-          "duration": "String (optional, e.g. '5 mins')",
-          "isFixedTime": Boolean (true if passive/chemical like boiling/baking, false if active labor like chopping)
+          "duration": Number, // MUST BE IN SECONDS (e.g., 300 for 5 mins). DO NOT USE STRINGS.
+          "isFixedTime": Boolean (true if passive like boiling/baking, false if active labor like chopping)
         }
       ]
     }
@@ -45,7 +48,7 @@ export async function POST(request: Request) {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: SYSTEM_PROMPT + "\nReturn JSON only." },
+        { role: "system", content: SYSTEM_PROMPT + "\nIMPORTANT: 'duration' must be a NUMBER in seconds." },
         { role: "user", content: userPrompt + "\nSchema:" + schemaStructure }
       ],
       response_format: { type: "json_object" },
