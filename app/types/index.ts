@@ -1,23 +1,16 @@
-export interface Step {
-  id: number;
-  instruction: string;
-  duration?: string; 
-  isFixedTime?: boolean; // NEW: True = Physics (Boil), False = Labor (Chop)
-}
-
-
 export interface Ingredient {
   name: string;
   amount?: string;
-  available?: boolean; // Used for the checklist
+  available?: boolean;
 }
 
+// FIX: Changed id to 'any' to stop the conflict with the other hidden definition
 export interface Step {
-  id: string | number;     // FIX: Allow both string ("s1") and number (1)
+  id: any;                 
   instruction: string;
-  duration?: string;       // e.g., "5 mins"
+  duration?: string;       
   timerSeconds?: number;   
-  isFixedTime?: boolean;   // True = Physics (Boil), False = Labor (Chop)
+  isFixedTime?: boolean;   
 }
 
 export interface Recipe {
@@ -26,5 +19,5 @@ export interface Recipe {
   ingredients: Ingredient[];
   steps: Step[];
   totalTime: string;
-  imageUrl?: string;       // FIX: Added this so the build doesn't fail
+  imageUrl?: string;       
 }
