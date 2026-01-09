@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shell } from "../components/Shell";
-import { Recipe } from "../../types";
+// FIX: Changed from "../../types" to "../types"
+import { Recipe } from "../types"; 
 import { Clock, ChefHat, ArrowLeft, Play, Utensils, CheckCircle2 } from "lucide-react";
 
 // --- IMPROVED IMAGE HELPER (Better Keyword Matching) ---
