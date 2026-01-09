@@ -27,7 +27,7 @@ const getRecipeImage = (title: string): string => {
   return "https://media.istockphoto.com/id/887636042/photo/the-start-of-something-delicious.jpg?s=612x612&w=0&k=20&c=2T_BCJQhhkfohcbcDZ14OV8rPStICJ9Q1_YjGUW2wCo=";
 };
 
-const parseDuration = (val: string | number): number => {
+const parseDuration = (val: any): number => {
   if (typeof val === 'number') return val;
   if (typeof val === 'string') {
     const num = parseInt(val);
