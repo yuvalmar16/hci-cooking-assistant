@@ -3,10 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shell } from "../../components/Shell";
+import { RecipeError } from "../../components/RecipeError"; // Import the new error component
+import { Loader2 } from "lucide-react"; // Icon for loading
 
 export default function IngredientsPage() {
   const [input, setInput] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorData, setErrorData] = useState<{title: string, description: string} | null>(null);
+  
   const router = useRouter();
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -23,23 +28,81 @@ export default function IngredientsPage() {
     setIngredients(ingredients.filter((_, index) => index !== indexToRemove));
   };
 
-  const handleContinue = () => {
-    // Save to local storage for the next step
-    localStorage.setItem("userIngredients", JSON.stringify(ingredients));
-    localStorage.setItem("cookingMode", "ingredients");
-    // For now, we go back home or to a placeholder. 
-    // In the full build, this goes to Step 10 (Overview).
-    // Let's go to a 'readiness' placeholder we will build next.
-    router.push("/overview"); 
+  const handleFindRecipes = async () => {
+    if (ingredients.length === 0) return;
+
+    setIsLoading(true);
+    setErrorData(null); // Reset errors
+
+    try {
+      // 1. Call the AI Chef immediately
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          mode: "ingredients", 
+          data: ingredients.join(", ") 
+        }),
+      });
+
+      const data = await response.json();
+
+      // 2. CHECK FOR ERRORS (Safety, Gibberish, Busy)
+      // The API returns a valid JSON, but the "title" might be an error flag.
+      if (
+        data.error || 
+        (data.title && (
+          data.title.includes("Unsafe") || 
+          data.title.includes("Unclear") || 
+          data.title.includes("Error")
+        ))
+      ) {
+        // Show the Error Screen on this page
+        setErrorData({
+          title: data.title || "System Error",
+          description: data.description || "Something went wrong in the kitchen."
+        });
+        setIsLoading(false);
+        return; 
+      }
+
+      // 3. SUCCESS! Save the recipe and go to Overview
+      // We save the *full recipe* now, not just ingredients
+      localStorage.setItem("currentRecipe", JSON.stringify(data));
+      router.push("/overview");
+
+    } catch (e) {
+      console.error(e);
+      setErrorData({
+        title: "Connection Error",
+        description: "Could not reach the chef. Please check your internet."
+      });
+      setIsLoading(false);
+    }
   };
 
+  // --- RENDER ERROR SCREEN IF NEEDED ---
+  if (errorData) {
+    return (
+      <Shell>
+        <RecipeError 
+          title={errorData.title} 
+          description={errorData.description} 
+          onRetry={() => setErrorData(null)} // Go back to input view
+        />
+      </Shell>
+    );
+  }
+
+  // --- NORMAL INPUT SCREEN ---
   return (
     <Shell>
       <div className="fade-in space-y-8">
         <header>
           <button 
             onClick={() => router.back()}
-            className="text-stone-400 hover:text-stone-600 mb-4 transition-colors"
+            disabled={isLoading}
+            className="text-stone-400 hover:text-stone-600 mb-4 transition-colors disabled:opacity-50"
           >
             ← Back
           </button>
@@ -57,8 +120,9 @@ export default function IngredientsPage() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          disabled={isLoading}
           placeholder="e.g., Chicken breast..."
-          className="w-full text-2xl p-4 border-2 border-stone-200 rounded-2xl focus:border-emerald-500 focus:outline-none transition-colors bg-white"
+          className="w-full text-2xl p-4 border-2 border-stone-200 rounded-2xl focus:border-emerald-500 focus:outline-none transition-colors bg-white disabled:bg-stone-50 disabled:text-stone-400"
           autoFocus
         />
 
@@ -72,8 +136,8 @@ export default function IngredientsPage() {
               {ing}
               <button
                 onClick={() => removeIngredient(index)}
-                className="ml-3 text-emerald-600 hover:text-emerald-900 focus:outline-none"
-                aria-label={`Remove ${ing}`}
+                disabled={isLoading}
+                className="ml-3 text-emerald-600 hover:text-emerald-900 focus:outline-none disabled:opacity-50"
               >
                 ×
               </button>
@@ -87,14 +151,21 @@ export default function IngredientsPage() {
           )}
         </div>
 
-        {/* Action Button */}
+        {/* Action Button (Now handles Loading) */}
         <div className="pt-8">
           <button
-            onClick={handleContinue}
-            disabled={ingredients.length === 0}
-            className="w-full md:w-auto px-12 py-4 bg-emerald-600 text-white text-xl rounded-full shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:shadow-emerald-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleFindRecipes}
+            disabled={ingredients.length === 0 || isLoading}
+            className="w-full md:w-auto px-12 py-4 bg-emerald-600 text-white text-xl rounded-full shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:shadow-emerald-200 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
           >
-            Find Recipes
+            {isLoading ? (
+              <>
+                <Loader2 className="w-6 h-6 animate-spin" />
+                Consulting Chef...
+              </>
+            ) : (
+              "Find Recipes"
+            )}
           </button>
         </div>
       </div>
