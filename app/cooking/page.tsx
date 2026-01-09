@@ -1,6 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -12,37 +9,29 @@ import { useTimers } from "../context/TimerContext";
 import { ChatPanel } from "../components/ChatPanel"; 
 import { Lightbulb, TrendingUp, Mic, MicOff, CheckCircle, Utensils, Info } from "lucide-react";
 
-// --- IMPROVED IMAGE HELPER ---
+// --- HELPERS ---
 const getRecipeImage = (title: string): string => {
   const t = title.toLowerCase();
-
   if (t.includes("sushi") || t.includes("roll") || t.includes("poke")) return "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200";
   if (t.includes("wok") || t.includes("stir") || t.includes("fry") || t.includes("asian") || t.includes("teriyaki")) return "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200";
   if (t.includes("curry") || t.includes("indian") || t.includes("masala") || t.includes("tikka")) return "https://www.allrecipes.com/thmb/cF4D_jCqxkPpjg08TdHXk1E-3nM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/212721-indian-chicken-curry-murgh-kari-DDMFS-4x3-330302d59ca64543b3d7ead88c226f9a.jpg";
-  
   if (t.includes("steak") || t.includes("beef") || t.includes("meat")) return "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=1200";
   if (t.includes("schnitzel") || t.includes("milanesa") || t.includes("fried chicken") || t.includes("cutlet")) return "https://images.unsplash.com/photo-1599921841143-819065a55cc6?auto=format&fit=crop&w=1200";
   if (t.includes("roast") || (t.includes("chicken") && t.includes("potato"))) return "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=1200";
   if (t.includes("burger") || t.includes("sandwich") || t.includes("wrap") || t.includes("toast")) return "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200";
-  
   if (t.includes("salmon") || t.includes("fish") || t.includes("seafood") || t.includes("shrimp")) return "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1200";
-
   if (t.includes("pasta") || t.includes("spaghetti") || t.includes("carbonara") || t.includes("alfredo") || t.includes("lasagna")) return "https://images.unsplash.com/photo-1626844131082-256783844137?auto=format&fit=crop&w=1200";
   if (t.includes("pizza") || t.includes("flatbread")) return "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200";
   if (t.includes("risotto") || t.includes("rice")) return "https://images.unsplash.com/photo-1536304993881-ffc028db6981?auto=format&fit=crop&w=1200";
-
   if (t.includes("salad") || t.includes("bowl") || t.includes("healthy") || t.includes("quinoa")) return "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200";
   if (t.includes("soup") || t.includes("stew") || t.includes("chili") || t.includes("broth")) return "https://www.thespruceeats.com/thmb/lko3xX8clhOrC894t9Drb6MoiX0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/easy-and-hearty-vegetable-soup-99538-hero-01-1d3b936ff03144af95ddca7640259c11.jpg";
   if (t.includes("shakshuka")) return "https://images.unsplash.com/photo-1590412200988-a436970781fa?auto=format&fit=crop&w=1200";
-
-  if (t.includes("omelet") || t.includes("egg") || t.includes("breakfast") || t.includes("pancake") || t.includes("waffle")) return "https://t3.ftcdn.net/jpg/07/15/86/22/360_F_715862236_VHJPf0EQsXpxSaoMJKOlkqfDSWlkMTZW.jpg";
-
+  if (t.includes("omelet") || t.includes("egg") || t.includes("breakfast") || t.includes("pancake") || t.includes("waffle")) return "https://images.unsplash.com/photo-1533089862017-5614fa6753f5?auto=format&fit=crop&w=1200";
   if (t.includes("cake") || t.includes("bake") || t.includes("cookie") || t.includes("dessert") || t.includes("pie") || t.includes("muffin")) return "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200";
 
   return "https://media.istockphoto.com/id/887636042/photo/the-start-of-something-delicious.jpg?s=612x612&w=0&k=20&c=2T_BCJQhhkfohcbcDZ14OV8rPStICJ9Q1_YjGUW2wCo=";
 };
 
-// --- FIX: USE 'any' TO BYPASS STRICT BUILD CHECKS ---
 const parseDuration = (val: any): number => {
   if (!val) return 0;
   if (typeof val === 'number') return val;
@@ -58,11 +47,7 @@ const parseDuration = (val: any): number => {
 const shouldShowTimer = (step: Step): boolean => {
   if (step.isFixedTime) return true;
   const text = step.instruction.toLowerCase();
-  const cookingKeywords = [
-    "boil", "fry", "bake", "roast", "simmer", "steam", "poach", 
-    "cook", "heat", "sauté", "brown", "grill", "broil",
-    "wait", "rest", "marinate", "chill", "freeze", "cool"
-  ];
+  const cookingKeywords = ["boil", "fry", "bake", "roast", "simmer", "steam", "poach", "cook", "heat", "sauté", "brown", "grill", "broil", "wait", "rest", "marinate", "chill", "freeze", "cool"];
   const timeKeywords = ["minutes", "mins", "hour", "hrs", "seconds"];
   const isCookingAction = cookingKeywords.some(k => text.includes(k));
   const hasTimeMention = timeKeywords.some(k => text.includes(k));
@@ -74,13 +59,7 @@ const hasIngredientDependency = (currentText: string, nextText: string): boolean
   const cleanNext = nextText.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "");
   const currentWords = cleanCurrent.split(/\s+/);
   const nextWords = cleanNext.split(/\s+/);
-  const ignoredWords = new Set([
-    "the", "a", "an", "in", "on", "at", "to", "for", "of", "with", "and", "or",
-    "place", "put", "add", "transfer", "remove", "serve", "plate", "garnish",
-    "cook", "boil", "fry", "bake", "roast", "grill", "heat", "whisk", "mix",
-    "minutes", "mins", "hours", "until", "soft", "tender", "done", "pan", "pot", "bowl",
-    "into", "onto", "from", "over", "under", "through"
-  ]);
+  const ignoredWords = new Set(["the", "a", "an", "in", "on", "at", "to", "for", "of", "with", "and", "or", "place", "put", "add", "transfer", "remove", "serve", "plate", "garnish", "cook", "boil", "fry", "bake", "roast", "grill", "heat", "whisk", "mix", "minutes", "mins", "hours", "until", "soft", "tender", "done", "pan", "pot", "bowl", "into", "onto", "from", "over", "under", "through"]);
 
   for (const word of nextWords) {
       if (word.length < 3) continue; 
@@ -93,6 +72,7 @@ const hasIngredientDependency = (currentText: string, nextText: string): boolean
 export default function CookingPage() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  // eslint-disable-next-line react-hooks/purity
   const [now, setNow] = useState(Date.now()); 
   
   const [showStartModal, setShowStartModal] = useState(true);
@@ -110,26 +90,57 @@ export default function CookingPage() {
       : undefined;
 
   const stepStartTime = useRef<number>(Date.now()); 
-  
   const globalRecognitionRef = useRef<any>(null);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-        setNow(Date.now()); 
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
+  // --- INITIALIZATION & SELF-HEALING LOGIC ---
   useEffect(() => {
     const stored = localStorage.getItem("currentRecipe");
+    const storedStep = localStorage.getItem("cookingStep");
+    const lastSessionId = localStorage.getItem("activeRecipeTitle"); // Tracks the last dish we cooked
+
     if (stored) {
-        const parsed = JSON.parse(stored);
-        parsed.imageUrl = getRecipeImage(parsed.title);
-        setRecipe(parsed);
+        try {
+            const parsed = JSON.parse(stored);
+            parsed.imageUrl = getRecipeImage(parsed.title);
+            setRecipe(parsed);
+
+            // *** CRITICAL FIX: DETECT NEW RECIPE ***
+            // If the recipe title has changed since the last session, OR if the stored step is out of bounds (invalid),
+            // we FORCE reset to 0.
+            if (parsed.title !== lastSessionId) {
+                console.log("New recipe detected. Resetting to Step 1.");
+                setCurrentStepIndex(0);
+                localStorage.setItem("cookingStep", "0");
+                localStorage.setItem("activeRecipeTitle", parsed.title);
+            } 
+            else if (storedStep) {
+                const idx = Number(storedStep);
+                // Safety check: Is the stored step valid for this recipe?
+                if (idx >= 0 && idx < parsed.steps.length) {
+                    setCurrentStepIndex(idx);
+                } else {
+                    setCurrentStepIndex(0); // Reset if invalid
+                }
+            }
+        } catch (e) {
+            console.error("Error parsing recipe", e);
+            router.push("/");
+        }
+    } else {
+        router.push("/");
     }
-    else router.push("/");
     stepStartTime.current = Date.now();
   }, [router]);
+
+  // --- SAVE STEP MEMORY ---
+  useEffect(() => {
+    localStorage.setItem("cookingStep", String(currentStepIndex));
+  }, [currentStepIndex]);
+
+  useEffect(() => {
+    const interval = setInterval(() => { setNow(Date.now()); }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     stepStartTime.current = Date.now();
@@ -182,7 +193,7 @@ export default function CookingPage() {
         return (
             <div className="mt-8 mb-4 bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg animate-pulse shadow-sm relative z-20">
                 <div className="flex items-start gap-3">
-                    <Lightbulb className="w-6 h-6 text-indigo-600 shrink-0 mt-1" />
+                    <Lightbulb className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-1" />
                     <div>
                         <h4 className="font-bold text-indigo-900 text-sm uppercase tracking-wide">Smart Optimization</h4>
                         <p className="text-indigo-800 text-sm mt-1">While waiting, you can start the next step.</p>
@@ -207,8 +218,9 @@ export default function CookingPage() {
     }
 
     if (isLastStep) {
-      alert("Meal complete!");
-      router.push("/");
+      // Force step to 0 when finishing so it doesn't get stuck next time
+      localStorage.setItem("cookingStep", "0"); 
+      router.push("/complete");
     } else {
       setCurrentStepIndex((prev) => prev + 1);
       window.scrollTo(0, 0); 
@@ -223,11 +235,8 @@ export default function CookingPage() {
   const handleStartTimer = useCallback(() => {
     if (!currentStep) return;
     const duration = parseDuration(currentStep.duration);
-
     if (duration === 0) { alert("No time limit detected for this step."); return; }
-    
     const stepIdStr = String(currentStep.id);
-
     if (!activeTimer) addTimer(stepIdStr, `Step ${currentStepIndex + 1}`, duration);
     else if (activeTimer.status === "paused") toggleTimer(stepIdStr);
   }, [currentStep, activeTimer, addTimer, toggleTimer, currentStepIndex]);
@@ -247,7 +256,6 @@ export default function CookingPage() {
     handleStartTimerRef.current = handleStartTimer;
     handleToggleTimerRef.current = handleToggleTimer;
   }, [handleNext, handleBack, handleStartTimer, handleToggleTimer]);
-
 
   const stopGlobalMic = () => {
     if (globalRecognitionRef.current) {
@@ -304,7 +312,6 @@ export default function CookingPage() {
       return () => stopGlobalMic();
   }, [handsFreeMode, isChatOpen, showStartModal, startGlobalMic]);
 
-
   const closeChat = () => {
       setIsChatOpen(false);
       setTriggeredByVoice(false); 
@@ -315,7 +322,6 @@ export default function CookingPage() {
       setShowStartModal(false);
   };
 
-
   if (!recipe || !currentStep) return null;
 
   return (
@@ -323,13 +329,13 @@ export default function CookingPage() {
       
       {recipe.imageUrl && (
         <div className="absolute top-0 left-0 w-full h-96 z-0">
-          <div className="absolute inset-0 bg-linear-to-b from-black/60 via-white/90 to-stone-50 z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-white/90 to-stone-50 z-10"></div>
           <img src={recipe.imageUrl} alt={recipe.title} className="w-full h-full object-cover" />
         </div>
       )}
 
       {showStartModal && (
-        <div className="fixed inset-0 z-100 bg-black/80 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
                 <Mic className="w-16 h-16 mx-auto text-emerald-600 mb-4" />
                 <h2 className="text-2xl font-bold text-stone-900 mb-2">Enable Hands-Free?</h2>
@@ -363,7 +369,7 @@ export default function CookingPage() {
         )}
 
         {lastHeard && !isChatOpen && (
-          <div className="bg-stone-800 text-white text-xs px-3 py-2 rounded-lg shadow-lg opacity-80 max-w-37.5 truncate transition-all">&quot; {lastHeard} &quot;</div>
+          <div className="bg-stone-800 text-white text-xs px-3 py-2 rounded-lg shadow-lg opacity-80 max-w-[150px] truncate transition-all">&quot; {lastHeard} &quot;</div>
         )}
 
         {pacingMultiplier !== 1.0 && (

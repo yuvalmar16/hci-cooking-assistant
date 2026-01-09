@@ -1,6 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,12 +5,11 @@ import { useRouter } from "next/navigation";
 import { Shell } from "../components/Shell";
 import { Recipe } from "../types";
 import { RecipeError } from "../components/RecipeError"; 
-import { Clock, ChefHat, ArrowLeft, Play, Utensils, CheckCircle2 } from "lucide-react";
+import { Clock, ChefHat, ArrowLeft, Play, Utensils, CheckCircle2, Scale } from "lucide-react";
 
 // --- IMAGE HELPER ---
 const getRecipeImage = (title: string): string => {
   const t = title.toLowerCase();
-
   if (t.includes("sushi") || t.includes("roll") || t.includes("poke")) return "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200";
   if (t.includes("wok") || t.includes("stir") || t.includes("fry") || t.includes("asian") || t.includes("teriyaki")) return "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200";
   if (t.includes("curry") || t.includes("indian") || t.includes("masala") || t.includes("tikka")) return "https://www.allrecipes.com/thmb/cF4D_jCqxkPpjg08TdHXk1E-3nM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/212721-indian-chicken-curry-murgh-kari-DDMFS-4x3-330302d59ca64543b3d7ead88c226f9a.jpg";
@@ -28,7 +24,7 @@ const getRecipeImage = (title: string): string => {
   if (t.includes("salad") || t.includes("bowl") || t.includes("healthy") || t.includes("quinoa")) return "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200";
   if (t.includes("soup") || t.includes("stew") || t.includes("chili") || t.includes("broth")) return "https://www.thespruceeats.com/thmb/lko3xX8clhOrC894t9Drb6MoiX0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/easy-and-hearty-vegetable-soup-99538-hero-01-1d3b936ff03144af95ddca7640259c11.jpg";
   if (t.includes("shakshuka")) return "https://images.unsplash.com/photo-1590412200988-a436970781fa?auto=format&fit=crop&w=1200";
-  if (t.includes("omelet") || t.includes("egg") || t.includes("breakfast") || t.includes("pancake") || t.includes("waffle")) return "https://t3.ftcdn.net/jpg/07/15/86/22/360_F_715862236_VHJPf0EQsXpxSaoMJKOlkqfDSWlkMTZW.jpg";
+  if (t.includes("omelet") || t.includes("egg") || t.includes("breakfast") || t.includes("pancake") || t.includes("waffle")) return "https://images.unsplash.com/photo-1533089862017-5614fa6753f5?auto=format&fit=crop&w=1200";
   if (t.includes("cake") || t.includes("bake") || t.includes("cookie") || t.includes("dessert") || t.includes("pie") || t.includes("muffin")) return "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200";
 
   return "https://media.istockphoto.com/id/887636042/photo/the-start-of-something-delicious.jpg?s=612x612&w=0&k=20&c=2T_BCJQhhkfohcbcDZ14OV8rPStICJ9Q1_YjGUW2wCo=";
@@ -62,12 +58,15 @@ export default function OverviewPage() {
     }
   };
 
+  const handleStartCooking = () => {
+    localStorage.setItem("cookingStep", "0");
+    router.push("/cooking");
+  };
+
   if (!recipe) return null;
 
-  // --- ERROR INTERCEPTION LOGIC ---
   const lowerTitle = recipe.title.toLowerCase();
   
-  // FIX: Added "prohibited" and "strict" to the list so it catches the Safety Rule #2
   if (
     lowerTitle.includes("not enough") || 
     lowerTitle.includes("unsafe") || 
@@ -87,7 +86,6 @@ export default function OverviewPage() {
     );
   }
 
-  // --- NORMAL RECIPE RENDER ---
   const imageUrl = getRecipeImage(recipe.title);
 
   return (
@@ -108,11 +106,11 @@ export default function OverviewPage() {
         </header>
 
         {/* RECIPE CARD */}
-        <div className="bg-white rounded-4xl shadow-xl border border-stone-100 overflow-hidden relative group">
+        <div className="bg-white rounded-[2rem] shadow-xl border border-stone-100 overflow-hidden relative group">
           
-          {/* HERO IMAGE */}
+          {/* Hero Image */}
           <div className="w-full h-64 md:h-80 overflow-hidden relative">
-             <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent z-10" />
+             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
              <img 
                src={imageUrl} 
                alt={recipe.title} 
@@ -140,18 +138,35 @@ export default function OverviewPage() {
               </p>
             </div>
 
-            {/* Ingredients Preview */}
+            {/* --- UPDATED: INGREDIENTS GRID WITH AMOUNTS --- */}
             <div className="pt-6 border-t border-stone-100">
-               <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-4">You have everything:</h3>
-               <div className="flex flex-wrap gap-2">
+               <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest">Mise en Place (Prep)</h3>
+                  <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
+                    {recipe.ingredients?.length || 0} Items
+                  </span>
+               </div>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                  {recipe.ingredients?.map((ing, i) => (
-                   <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-50 text-emerald-800 text-sm rounded-full">
-                     <CheckCircle2 className="w-3 h-3 opacity-50" />
-                     {ing.name}
-                   </span>
+                   <div key={i} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100 hover:border-emerald-200 transition-colors group">
+                     
+                     <span className="font-medium text-stone-700 flex items-center gap-3">
+                       <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                       <span className="group-hover:text-emerald-800 transition-colors">{ing.name}</span>
+                     </span>
+
+                     {/* Shows Amount Clearly */}
+                     <span className="font-bold text-stone-900 bg-white px-3 py-1.5 rounded-lg shadow-sm text-sm border border-stone-100 flex items-center gap-1.5 whitespace-nowrap">
+                       <Scale className="w-3 h-3 text-stone-400" />
+                       {ing.amount}
+                     </span>
+
+                   </div>
                  ))}
                </div>
             </div>
+
           </div>
         </div>
 
@@ -166,8 +181,8 @@ export default function OverviewPage() {
           </button>
 
           <button
-            onClick={() => router.push("/cooking")}
-            className="flex-2 px-8 py-5 bg-stone-900 text-white font-bold text-lg rounded-full shadow-xl shadow-stone-200 hover:bg-black hover:scale-[1.02] transition-all flex items-center justify-center gap-3 active:scale-95"
+            onClick={handleStartCooking} 
+            className="flex-[2] px-8 py-5 bg-stone-900 text-white font-bold text-lg rounded-full shadow-xl shadow-stone-200 hover:bg-black hover:scale-[1.02] transition-all flex items-center justify-center gap-3 active:scale-95"
           >
             <Play className="w-5 h-5 fill-current" />
             Let's Cook
