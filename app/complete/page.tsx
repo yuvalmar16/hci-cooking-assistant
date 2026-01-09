@@ -141,7 +141,7 @@ export default function MealCompletePage() {
           <div className="p-6 space-y-6 bg-stone-50/30">
             
             <div className="flex gap-4">
-               <div className="w-8 h-8 bg-emerald-600 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs mt-1">S</div>
+               <div className="w-8 h-8 bg-emerald-600 rounded-full shrink-0 flex items-center justify-center text-white text-xs mt-1">S</div>
                <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm text-stone-700 border border-stone-100">
                  <p>Wow! That smells delicious from here! 😋</p>
                  <p className="mt-2">Be honest, how did it turn out? I want to learn for next time!</p>
@@ -151,7 +151,7 @@ export default function MealCompletePage() {
             {isSubmitted ? (
                <div className="space-y-6">
                  <div className="flex gap-4 flex-row-reverse">
-                    <div className="w-8 h-8 bg-stone-800 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs mt-1">You</div>
+                    <div className="w-8 h-8 bg-stone-800 rounded-full shrink-0 flex items-center justify-center text-white text-xs mt-1">You</div>
                     <div className="bg-stone-800 text-white p-4 rounded-2xl rounded-tr-none shadow-md">
                       <p>{feedback}</p>
                       <div className="flex gap-1 mt-2">
@@ -163,7 +163,7 @@ export default function MealCompletePage() {
                  </div>
                  
                  <div className="flex gap-4 animate-in fade-in slide-in-from-left-2 duration-500">
-                    <div className="w-8 h-8 bg-emerald-600 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs mt-1">S</div>
+                    <div className="w-8 h-8 bg-emerald-600 rounded-full shrink-0 flex items-center justify-center text-white text-xs mt-1">S</div>
                     <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm text-stone-700 border border-stone-100">
                       <p className="text-emerald-700 font-medium">Thanks! I've saved this to your <b>Taste Profile</b>.</p>
                       <p className="text-sm text-stone-400 mt-1">

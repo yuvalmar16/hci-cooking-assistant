@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -106,11 +108,11 @@ export default function OverviewPage() {
         </header>
 
         {/* RECIPE CARD */}
-        <div className="bg-white rounded-[2rem] shadow-xl border border-stone-100 overflow-hidden relative group">
+        <div className="bg-white rounded-4xl shadow-xl border border-stone-100 overflow-hidden relative group">
           
           {/* Hero Image */}
           <div className="w-full h-64 md:h-80 overflow-hidden relative">
-             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+             <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent z-10" />
              <img 
                src={imageUrl} 
                alt={recipe.title} 
@@ -152,7 +154,7 @@ export default function OverviewPage() {
                    <div key={i} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100 hover:border-emerald-200 transition-colors group">
                      
                      <span className="font-medium text-stone-700 flex items-center gap-3">
-                       <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                       <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                        <span className="group-hover:text-emerald-800 transition-colors">{ing.name}</span>
                      </span>
 
@@ -182,7 +184,7 @@ export default function OverviewPage() {
 
           <button
             onClick={handleStartCooking} 
-            className="flex-[2] px-8 py-5 bg-stone-900 text-white font-bold text-lg rounded-full shadow-xl shadow-stone-200 hover:bg-black hover:scale-[1.02] transition-all flex items-center justify-center gap-3 active:scale-95"
+            className="flex-2 px-8 py-5 bg-stone-900 text-white font-bold text-lg rounded-full shadow-xl shadow-stone-200 hover:bg-black hover:scale-[1.02] transition-all flex items-center justify-center gap-3 active:scale-95"
           >
             <Play className="w-5 h-5 fill-current" />
             Let's Cook
