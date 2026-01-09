@@ -8,26 +8,47 @@ import { useTimers } from "../context/TimerContext";
 import { ChatPanel } from "../components/ChatPanel"; 
 import { Lightbulb, TrendingUp, Mic, MicOff, CheckCircle, Utensils, Info } from "lucide-react";
 
+// --- IMPROVED IMAGE HELPER (Matches Overview Page) ---
 const getRecipeImage = (title: string): string => {
   const t = title.toLowerCase();
-  if (t.includes("sushi") || t.includes("roll")) return "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200";
-  if (t.includes("wok") || t.includes("stir")) return "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200";
-  if (t.includes("indian") || t.includes("curry") || t.includes("tikka")) return "https://www.allrecipes.com/thmb/cF4D_jCqxkPpjg08TdHXk1E-3nM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/212721-indian-chicken-curry-murgh-kari-DDMFS-4x3-330302d59ca64543b3d7ead88c226f9a.jpg";
-  if (t.includes("schnitzel") || t.includes("milanesa")) return "https://images.unsplash.com/photo-1599921841143-819065a55cc6?auto=format&fit=crop&w=1200";
-  if (t.includes("cake") || t.includes("bake") || t.includes("dessert")) return "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200";
-  if ((t.includes("chicken") && t.includes("potato")) || t.includes("roast")) return "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=1200";
-  if (t.includes("fish") && t.includes("chips")) return "https://images.unsplash.com/photo-1579208575657-c595a05383b7?auto=format&fit=crop&w=1200";
-  if (t.includes("sandwich") || t.includes("burger") || t.includes("toast")) return "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200";
+
+  // Asian / Stir Fry
+  if (t.includes("sushi") || t.includes("roll") || t.includes("poke")) return "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200";
+  if (t.includes("wok") || t.includes("stir") || t.includes("fry") || t.includes("asian") || t.includes("teriyaki")) return "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200";
+  if (t.includes("curry") || t.includes("indian") || t.includes("masala") || t.includes("tikka")) return "https://www.allrecipes.com/thmb/cF4D_jCqxkPpjg08TdHXk1E-3nM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/212721-indian-chicken-curry-murgh-kari-DDMFS-4x3-330302d59ca64543b3d7ead88c226f9a.jpg";
+  
+  // Meat Mains
+  if (t.includes("steak") || t.includes("beef") || t.includes("meat")) return "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=1200";
+  if (t.includes("schnitzel") || t.includes("milanesa") || t.includes("fried chicken") || t.includes("cutlet")) return "https://images.unsplash.com/photo-1599921841143-819065a55cc6?auto=format&fit=crop&w=1200";
+  if (t.includes("roast") || (t.includes("chicken") && t.includes("potato"))) return "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=1200";
+  if (t.includes("burger") || t.includes("sandwich") || t.includes("wrap") || t.includes("toast")) return "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200";
+  
+  // Fish
+  if (t.includes("salmon") || t.includes("fish") || t.includes("seafood") || t.includes("shrimp")) return "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1200";
+
+  // Italian / Pasta
+  if (t.includes("pasta") || t.includes("spaghetti") || t.includes("carbonara") || t.includes("alfredo") || t.includes("lasagna")) return "https://images.unsplash.com/photo-1626844131082-256783844137?auto=format&fit=crop&w=1200";
+  if (t.includes("pizza") || t.includes("flatbread")) return "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200";
+  if (t.includes("risotto") || t.includes("rice")) return "https://images.unsplash.com/photo-1536304993881-ffc028db6981?auto=format&fit=crop&w=1200";
+
+  // Healthy / Veg
+  if (t.includes("salad") || t.includes("bowl") || t.includes("healthy") || t.includes("quinoa")) return "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200";
+  if (t.includes("soup") || t.includes("stew") || t.includes("chili") || t.includes("broth")) return "https://www.thespruceeats.com/thmb/lko3xX8clhOrC894t9Drb6MoiX0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/easy-and-hearty-vegetable-soup-99538-hero-01-1d3b936ff03144af95ddca7640259c11.jpg";
   if (t.includes("shakshuka")) return "https://images.unsplash.com/photo-1590412200988-a436970781fa?auto=format&fit=crop&w=1200";
-  if (t.includes("omelet") || t.includes("egg") || t.includes("breakfast")) return "https://images.unsplash.com/photo-1510693206972-df098062cb71?auto=format&fit=crop&w=1200";
-  if (t.includes("pasta") || t.includes("spaghetti")) return "https://images.unsplash.com/photo-1626844131082-256783844137?auto=format&fit=crop&w=1200";
-  if (t.includes("pizza")) return "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200";
-  if (t.includes("salad")) return "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200";
-  if (t.includes("soup")) return "https://www.thespruceeats.com/thmb/lko3xX8clhOrC894t9Drb6MoiX0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/easy-and-hearty-vegetable-soup-99538-hero-01-1d3b936ff03144af95ddca7640259c11.jpg";
+
+  // Breakfast
+  if (t.includes("omelet") || t.includes("egg") || t.includes("breakfast") || t.includes("pancake") || t.includes("waffle")) return "https://images.unsplash.com/photo-1533089862017-5614fa6753f5?auto=format&fit=crop&w=1200";
+
+  // Dessert / Baking
+  if (t.includes("cake") || t.includes("bake") || t.includes("cookie") || t.includes("dessert") || t.includes("pie") || t.includes("muffin")) return "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200";
+
+  // Default Fallback
   return "https://media.istockphoto.com/id/887636042/photo/the-start-of-something-delicious.jpg?s=612x612&w=0&k=20&c=2T_BCJQhhkfohcbcDZ14OV8rPStICJ9Q1_YjGUW2wCo=";
 };
 
-const parseDuration = (val: any): number => {
+// Updated to accept undefined/null
+const parseDuration = (val: string | number | undefined | null): number => {
+  if (!val) return 0;
   if (typeof val === 'number') return val;
   if (typeof val === 'string') {
     const num = parseInt(val);
@@ -108,6 +129,7 @@ export default function CookingPage() {
     const stored = localStorage.getItem("currentRecipe");
     if (stored) {
         const parsed = JSON.parse(stored);
+        // Use the IMPROVED image logic here
         parsed.imageUrl = getRecipeImage(parsed.title);
         setRecipe(parsed);
     }

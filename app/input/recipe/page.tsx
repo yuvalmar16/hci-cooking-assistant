@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Shell } from "../../components/Shell";
-import { RecipeError } from "../../components/RecipeError"; // 1. Import Error Component
-import { Loader2 } from "lucide-react"; // 2. Import Loader
+import { RecipeError } from "../../components/RecipeError";
+import { Loader2 } from "lucide-react";
 
 export default function RecipePage() {
   const [text, setText] = useState("");
@@ -13,27 +13,31 @@ export default function RecipePage() {
   
   const router = useRouter();
 
+  // --- RESTORE PREVIOUS STATE (THE "MEMORY") ---
+  useEffect(() => {
+    const saved = localStorage.getItem("lastRecipeText");
+    if (saved) {
+      setText(saved);
+    }
+  }, []);
+
   const handleSimplify = async () => {
     if (text.length < 10) return;
 
     setIsLoading(true);
-    setErrorData(null); // Reset errors
+    setErrorData(null);
 
     try {
-      // 3. Call the AI immediately
+      // 1. API Call
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          mode: "recipe", // Tell backend this is raw text
-          data: text 
-        }),
+        body: JSON.stringify({ mode: "recipe", data: text }),
       });
 
       const data = await response.json();
 
-      // 4. CHECK FOR ERRORS (Safety, Gibberish, Busy)
-      // If the API returns a safety warning or unclear input flag
+      // 2. Error Check
       if (
         data.error || 
         (data.title && (
@@ -42,7 +46,6 @@ export default function RecipePage() {
           data.title.includes("Error")
         ))
       ) {
-        // Show the Error Screen
         setErrorData({
           title: data.title || "System Error",
           description: data.description || "I couldn't process that text."
@@ -51,52 +54,43 @@ export default function RecipePage() {
         return; 
       }
 
-      // 5. SUCCESS! Save full recipe and go to Overview
+      // 3. Success: Save Data
       localStorage.setItem("currentRecipe", JSON.stringify(data));
-      // We don't need 'rawRecipe' anymore since we have the processed result
+
+      // *** SAVE INPUTS FOR RESTORE ***
+      localStorage.setItem("lastRecipeText", text);
+      localStorage.setItem("cookingMode", "recipe");
+
       router.push("/overview");
 
     } catch (e) {
       console.error(e);
-      setErrorData({
-        title: "Connection Error",
-        description: "Could not reach the chef. Please check your internet."
-      });
+      setErrorData({ title: "Connection Error", description: "Check internet connection." });
       setIsLoading(false);
     }
   };
 
-  // --- RENDER ERROR SCREEN IF NEEDED ---
+  // --- ERROR SCREEN ---
   if (errorData) {
     return (
       <Shell>
         <RecipeError 
           title={errorData.title} 
           description={errorData.description} 
-          onRetry={() => setErrorData(null)} // Go back to text input
+          onRetry={() => setErrorData(null)} 
         />
       </Shell>
     );
   }
 
-  // --- NORMAL INPUT SCREEN ---
+  // --- NORMAL UI ---
   return (
     <Shell>
       <div className="fade-in space-y-6">
         <header>
-          <button 
-            onClick={() => router.back()}
-            disabled={isLoading}
-            className="text-stone-400 hover:text-stone-600 mb-4 transition-colors disabled:opacity-50"
-          >
-            ← Back
-          </button>
-          <h1 className="text-4xl md:text-5xl font-medium text-stone-800">
-            Paste recipe.
-          </h1>
-          <p className="mt-2 text-stone-500 text-lg">
-            Paste the full text from any website below.
-          </p>
+          <button onClick={() => router.push("/")} className="text-stone-400 hover:text-stone-600 mb-4 transition-colors">← Home</button>
+          <h1 className="text-4xl md:text-5xl font-medium text-stone-800">Paste recipe.</h1>
+          <p className="mt-2 text-stone-500 text-lg">Paste the full text from any website below.</p>
         </header>
 
         <textarea
@@ -104,7 +98,7 @@ export default function RecipePage() {
           onChange={(e) => setText(e.target.value)}
           disabled={isLoading}
           placeholder="Paste text here..."
-          className="w-full h-64 p-6 text-lg border-2 border-stone-200 rounded-3xl focus:border-emerald-500 focus:outline-none transition-colors bg-white resize-none leading-relaxed disabled:bg-stone-50 disabled:text-stone-400"
+          className="w-full h-64 p-6 text-lg border-2 border-stone-200 rounded-3xl focus:border-emerald-500 outline-none resize-none disabled:bg-stone-50"
           autoFocus
         />
 
@@ -112,16 +106,9 @@ export default function RecipePage() {
           <button
             onClick={handleSimplify}
             disabled={text.length < 10 || isLoading}
-            className="w-full md:w-auto px-12 py-4 bg-emerald-600 text-white text-xl rounded-full shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:shadow-emerald-200 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+            className="w-full md:w-auto px-12 py-4 bg-emerald-600 text-white text-xl rounded-full shadow-lg hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-3 transition-all"
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-6 h-6 animate-spin" />
-                Simplifying...
-              </>
-            ) : (
-              "Simplify Recipe"
-            )}
+            {isLoading ? <><Loader2 className="animate-spin" /> Simplifying...</> : "Simplify Recipe"}
           </button>
         </div>
       </div>
