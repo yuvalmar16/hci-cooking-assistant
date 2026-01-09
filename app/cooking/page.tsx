@@ -8,45 +8,38 @@ import { useTimers } from "../context/TimerContext";
 import { ChatPanel } from "../components/ChatPanel"; 
 import { Lightbulb, TrendingUp, Mic, MicOff, CheckCircle, Utensils, Info } from "lucide-react";
 
-// --- IMPROVED IMAGE HELPER (Matches Overview Page) ---
+// --- IMPROVED IMAGE HELPER ---
 const getRecipeImage = (title: string): string => {
   const t = title.toLowerCase();
 
-  // Asian / Stir Fry
   if (t.includes("sushi") || t.includes("roll") || t.includes("poke")) return "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200";
   if (t.includes("wok") || t.includes("stir") || t.includes("fry") || t.includes("asian") || t.includes("teriyaki")) return "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200";
   if (t.includes("curry") || t.includes("indian") || t.includes("masala") || t.includes("tikka")) return "https://www.allrecipes.com/thmb/cF4D_jCqxkPpjg08TdHXk1E-3nM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/212721-indian-chicken-curry-murgh-kari-DDMFS-4x3-330302d59ca64543b3d7ead88c226f9a.jpg";
   
-  // Meat Mains
   if (t.includes("steak") || t.includes("beef") || t.includes("meat")) return "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=1200";
   if (t.includes("schnitzel") || t.includes("milanesa") || t.includes("fried chicken") || t.includes("cutlet")) return "https://images.unsplash.com/photo-1599921841143-819065a55cc6?auto=format&fit=crop&w=1200";
   if (t.includes("roast") || (t.includes("chicken") && t.includes("potato"))) return "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=1200";
   if (t.includes("burger") || t.includes("sandwich") || t.includes("wrap") || t.includes("toast")) return "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200";
   
-  // Fish
   if (t.includes("salmon") || t.includes("fish") || t.includes("seafood") || t.includes("shrimp")) return "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1200";
 
-  // Italian / Pasta
   if (t.includes("pasta") || t.includes("spaghetti") || t.includes("carbonara") || t.includes("alfredo") || t.includes("lasagna")) return "https://images.unsplash.com/photo-1626844131082-256783844137?auto=format&fit=crop&w=1200";
   if (t.includes("pizza") || t.includes("flatbread")) return "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200";
   if (t.includes("risotto") || t.includes("rice")) return "https://images.unsplash.com/photo-1536304993881-ffc028db6981?auto=format&fit=crop&w=1200";
 
-  // Healthy / Veg
   if (t.includes("salad") || t.includes("bowl") || t.includes("healthy") || t.includes("quinoa")) return "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200";
   if (t.includes("soup") || t.includes("stew") || t.includes("chili") || t.includes("broth")) return "https://www.thespruceeats.com/thmb/lko3xX8clhOrC894t9Drb6MoiX0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/easy-and-hearty-vegetable-soup-99538-hero-01-1d3b936ff03144af95ddca7640259c11.jpg";
   if (t.includes("shakshuka")) return "https://images.unsplash.com/photo-1590412200988-a436970781fa?auto=format&fit=crop&w=1200";
 
-  // Breakfast
   if (t.includes("omelet") || t.includes("egg") || t.includes("breakfast") || t.includes("pancake") || t.includes("waffle")) return "https://images.unsplash.com/photo-1533089862017-5614fa6753f5?auto=format&fit=crop&w=1200";
 
-  // Dessert / Baking
   if (t.includes("cake") || t.includes("bake") || t.includes("cookie") || t.includes("dessert") || t.includes("pie") || t.includes("muffin")) return "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200";
 
-  // Default Fallback
   return "https://media.istockphoto.com/id/887636042/photo/the-start-of-something-delicious.jpg?s=612x612&w=0&k=20&c=2T_BCJQhhkfohcbcDZ14OV8rPStICJ9Q1_YjGUW2wCo=";
 };
 
-// Updated to accept undefined/null
+// --- FIX: UPDATED PARSE DURATION ---
+// This now accepts 'undefined' or 'null' to prevent TypeErrors during build
 const parseDuration = (val: string | number | undefined | null): number => {
   if (!val) return 0;
   if (typeof val === 'number') return val;
@@ -110,7 +103,6 @@ export default function CookingPage() {
   const router = useRouter();
   const { timers, addTimer, toggleTimer, removeTimer, pacingMultiplier, recordStepTime } = useTimers();
   const activeTimer = recipe && recipe.steps[currentStepIndex] 
-      // FIX: Ensure ID comparison matches types (String vs Number)
       ? timers.find((t) => t.id === String(recipe.steps[currentStepIndex].id)) 
       : undefined;
 
@@ -129,7 +121,6 @@ export default function CookingPage() {
     const stored = localStorage.getItem("currentRecipe");
     if (stored) {
         const parsed = JSON.parse(stored);
-        // Use the IMPROVED image logic here
         parsed.imageUrl = getRecipeImage(parsed.title);
         setRecipe(parsed);
     }
@@ -162,7 +153,6 @@ export default function CookingPage() {
         const stepDuration = parseDuration(step.duration);
 
         if (index === currentStepIndex) {
-            // FIX: String conversion for ID comparison
             if (activeTimer && activeTimer.id === String(step.id) && activeTimer.status !== 'finished') {
                 totalSeconds += activeTimer.remainingSeconds;
             } else {
@@ -179,7 +169,6 @@ export default function CookingPage() {
   }, [recipe, currentStepIndex, pacingMultiplier, activeTimer, now]); 
 
   const getOptimizationSuggestion = () => {
-    // FIX: Added !currentStep check to satisfy TypeScript
     if (!activeTimer || !nextStep || !currentStep) return null;
     
     const isLongWait = activeTimer.status === 'running' && activeTimer.remainingSeconds > 120; 
@@ -234,7 +223,6 @@ export default function CookingPage() {
 
     if (duration === 0) { alert("No time limit detected for this step."); return; }
     
-    // FIX: String conversion for ID
     const stepIdStr = String(currentStep.id);
 
     if (!activeTimer) addTimer(stepIdStr, `Step ${currentStepIndex + 1}`, duration);
@@ -443,9 +431,7 @@ export default function CookingPage() {
              <div className="mb-12">
                <h3 className="text-xs uppercase tracking-widest text-stone-500 font-bold mb-4 bg-white/50 inline-block px-1 rounded">Running in Background</h3>
                <div className="space-y-3">
-                 {/* FIX: Filter with String conversion */}
                  {timers.filter(t => t.id !== String(currentStep.id)).map(t => {
-                   // FIX: Find relevant step with String conversion
                    const relevantStep = recipe.steps.find(s => String(s.id) === t.id);
                    const stepName = relevantStep ? relevantStep.instruction : "Background Task";
 
