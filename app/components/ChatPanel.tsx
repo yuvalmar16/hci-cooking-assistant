@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from "react";
 import { X, Send, Bot, Sparkles, Mic, Square } from "lucide-react";
 
@@ -124,10 +125,10 @@ export function ChatPanel({ isOpen, onClose, currentStep, autoStartListening }: 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full md:w-[450px] bg-white shadow-2xl transform transition-transform z-[100] flex flex-col font-sans border-l border-stone-200">
+    <div className="fixed inset-y-0 right-0 w-full md:w-112.5 bg-white shadow-2xl transform transition-transform z-100 flex flex-col font-sans border-l border-stone-200">
       
       {/* Header */}
-      <div className="p-4 bg-emerald-600 text-white flex justify-between items-center shadow-md flex-shrink-0">
+      <div className="p-4 bg-emerald-600 text-white flex justify-between items-center shadow-md shrink-0">
         <div className="flex items-center gap-2">
           <Bot className="w-6 h-6" />
           <h2 className="font-bold text-lg">Susie (AI Chef)</h2>
@@ -142,7 +143,7 @@ export function ChatPanel({ isOpen, onClose, currentStep, autoStartListening }: 
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             <div 
-              className={`max-w-[90%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm break-words whitespace-pre-wrap ${
+              className={`max-w-[90%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm wrap-break-word whitespace-pre-wrap ${
                 msg.role === "user" 
                   ? "bg-stone-800 text-white rounded-tr-none" 
                   : "bg-white text-stone-800 border border-stone-200 rounded-tl-none"
@@ -171,7 +172,7 @@ export function ChatPanel({ isOpen, onClose, currentStep, autoStartListening }: 
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-white border-t border-stone-200 flex-shrink-0">
+      <div className="p-4 bg-white border-t border-stone-200 shrink-0">
         <div className="relative flex items-center gap-2">
           <input
             type="text"

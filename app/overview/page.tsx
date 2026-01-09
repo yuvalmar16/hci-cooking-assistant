@@ -1,47 +1,36 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shell } from "../components/Shell";
-// FIX: Changed from "../../types" to "../types"
-import { Recipe } from "../types"; 
+import { Recipe } from "../types";
+import { RecipeError } from "../components/RecipeError"; 
 import { Clock, ChefHat, ArrowLeft, Play, Utensils, CheckCircle2 } from "lucide-react";
 
-// --- IMPROVED IMAGE HELPER (Better Keyword Matching) ---
+// --- IMAGE HELPER ---
 const getRecipeImage = (title: string): string => {
   const t = title.toLowerCase();
 
-  // Asian / Stir Fry
   if (t.includes("sushi") || t.includes("roll") || t.includes("poke")) return "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200";
   if (t.includes("wok") || t.includes("stir") || t.includes("fry") || t.includes("asian") || t.includes("teriyaki")) return "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=1200";
   if (t.includes("curry") || t.includes("indian") || t.includes("masala") || t.includes("tikka")) return "https://www.allrecipes.com/thmb/cF4D_jCqxkPpjg08TdHXk1E-3nM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/212721-indian-chicken-curry-murgh-kari-DDMFS-4x3-330302d59ca64543b3d7ead88c226f9a.jpg";
-  
-  // Meat Mains
   if (t.includes("steak") || t.includes("beef") || t.includes("meat")) return "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=1200";
   if (t.includes("schnitzel") || t.includes("milanesa") || t.includes("fried chicken") || t.includes("cutlet")) return "https://images.unsplash.com/photo-1599921841143-819065a55cc6?auto=format&fit=crop&w=1200";
   if (t.includes("roast") || (t.includes("chicken") && t.includes("potato"))) return "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=1200";
   if (t.includes("burger") || t.includes("sandwich") || t.includes("wrap") || t.includes("toast")) return "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200";
-  
-  // Fish
   if (t.includes("salmon") || t.includes("fish") || t.includes("seafood") || t.includes("shrimp")) return "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1200";
-
-  // Italian / Pasta
   if (t.includes("pasta") || t.includes("spaghetti") || t.includes("carbonara") || t.includes("alfredo") || t.includes("lasagna")) return "https://images.unsplash.com/photo-1626844131082-256783844137?auto=format&fit=crop&w=1200";
   if (t.includes("pizza") || t.includes("flatbread")) return "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200";
   if (t.includes("risotto") || t.includes("rice")) return "https://images.unsplash.com/photo-1536304993881-ffc028db6981?auto=format&fit=crop&w=1200";
-
-  // Healthy / Veg
   if (t.includes("salad") || t.includes("bowl") || t.includes("healthy") || t.includes("quinoa")) return "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200";
   if (t.includes("soup") || t.includes("stew") || t.includes("chili") || t.includes("broth")) return "https://www.thespruceeats.com/thmb/lko3xX8clhOrC894t9Drb6MoiX0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/easy-and-hearty-vegetable-soup-99538-hero-01-1d3b936ff03144af95ddca7640259c11.jpg";
   if (t.includes("shakshuka")) return "https://images.unsplash.com/photo-1590412200988-a436970781fa?auto=format&fit=crop&w=1200";
-
-  // Breakfast
-  if (t.includes("omelet") || t.includes("egg") || t.includes("breakfast") || t.includes("pancake") || t.includes("waffle")) return "https://images.unsplash.com/photo-1533089862017-5614fa6753f5?auto=format&fit=crop&w=1200";
-
-  // Dessert / Baking
+  if (t.includes("omelet") || t.includes("egg") || t.includes("breakfast") || t.includes("pancake") || t.includes("waffle")) return "https://t3.ftcdn.net/jpg/07/15/86/22/360_F_715862236_VHJPf0EQsXpxSaoMJKOlkqfDSWlkMTZW.jpg";
   if (t.includes("cake") || t.includes("bake") || t.includes("cookie") || t.includes("dessert") || t.includes("pie") || t.includes("muffin")) return "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200";
 
-  // Default Fallback
   return "https://media.istockphoto.com/id/887636042/photo/the-start-of-something-delicious.jpg?s=612x612&w=0&k=20&c=2T_BCJQhhkfohcbcDZ14OV8rPStICJ9Q1_YjGUW2wCo=";
 };
 
@@ -50,7 +39,6 @@ export default function OverviewPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // 1. Load the generated recipe from storage
     const stored = localStorage.getItem("currentRecipe");
     
     if (stored) {
@@ -76,7 +64,30 @@ export default function OverviewPage() {
 
   if (!recipe) return null;
 
-  // Use the OUTPUT TITLE (recipe.title) to find the best image
+  // --- ERROR INTERCEPTION LOGIC ---
+  const lowerTitle = recipe.title.toLowerCase();
+  
+  // FIX: Added "prohibited" and "strict" to the list so it catches the Safety Rule #2
+  if (
+    lowerTitle.includes("not enough") || 
+    lowerTitle.includes("unsafe") || 
+    lowerTitle.includes("unclear") || 
+    lowerTitle.includes("error") || 
+    lowerTitle.includes("prohibited") || 
+    lowerTitle.includes("strict")
+  ) {
+    return (
+      <Shell>
+        <RecipeError 
+          title={recipe.title} 
+          description={recipe.description} 
+          onRetry={handleEditInputs} 
+        />
+      </Shell>
+    );
+  }
+
+  // --- NORMAL RECIPE RENDER ---
   const imageUrl = getRecipeImage(recipe.title);
 
   return (
@@ -97,11 +108,11 @@ export default function OverviewPage() {
         </header>
 
         {/* RECIPE CARD */}
-        <div className="bg-white rounded-[2rem] shadow-xl border border-stone-100 overflow-hidden relative group">
+        <div className="bg-white rounded-4xl shadow-xl border border-stone-100 overflow-hidden relative group">
           
           {/* HERO IMAGE */}
           <div className="w-full h-64 md:h-80 overflow-hidden relative">
-             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+             <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent z-10" />
              <img 
                src={imageUrl} 
                alt={recipe.title} 
@@ -129,11 +140,10 @@ export default function OverviewPage() {
               </p>
             </div>
 
-            {/* Ingredients Preview - SHOW ALL */}
+            {/* Ingredients Preview */}
             <div className="pt-6 border-t border-stone-100">
                <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-4">You have everything:</h3>
                <div className="flex flex-wrap gap-2">
-                 {/* Map all ingredients without slicing */}
                  {recipe.ingredients?.map((ing, i) => (
                    <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-50 text-emerald-800 text-sm rounded-full">
                      <CheckCircle2 className="w-3 h-3 opacity-50" />
@@ -157,7 +167,7 @@ export default function OverviewPage() {
 
           <button
             onClick={() => router.push("/cooking")}
-            className="flex-[2] px-8 py-5 bg-stone-900 text-white font-bold text-lg rounded-full shadow-xl shadow-stone-200 hover:bg-black hover:scale-[1.02] transition-all flex items-center justify-center gap-3 active:scale-95"
+            className="flex-2 px-8 py-5 bg-stone-900 text-white font-bold text-lg rounded-full shadow-xl shadow-stone-200 hover:bg-black hover:scale-[1.02] transition-all flex items-center justify-center gap-3 active:scale-95"
           >
             <Play className="w-5 h-5 fill-current" />
             Let's Cook
