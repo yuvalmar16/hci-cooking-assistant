@@ -40,17 +40,18 @@ const getRecipeImage = (title: string): string => {
 
 // --- FIX: UPDATED PARSE DURATION ---
 // This now accepts 'undefined' or 'null' to prevent TypeErrors during build
-const parseDuration = (val: string | number | undefined | null): number => {
-  if (!val) return 0;
-  if (typeof val === 'number') return val;
-  if (typeof val === 'string') {
-    const num = parseInt(val);
-    if (!isNaN(num)) {
-       return num < 60 ? num * 60 : num;
+const parseDuration = (val: any): number => {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const num = parseInt(val);
+      if (!isNaN(num)) {
+        // Heuristic: if < 60, assume minutes and convert to seconds
+        return num < 60 ? num * 60 : num;
+      }
     }
-  }
-  return 0;
-};
+    return 0;
+  };
 
 const shouldShowTimer = (step: Step): boolean => {
   if (step.isFixedTime) return true;
