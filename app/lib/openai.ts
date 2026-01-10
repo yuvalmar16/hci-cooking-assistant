@@ -23,7 +23,7 @@ export function checkBudget(text: string): boolean {
   // Rough estimation: 1 token ~= 4 chars
   const estimatedTokens = text.length / 4;
   
-  if (estimatedTokens > 3000) {
+  if (estimatedTokens > 6000) {
     throw new Error("Request too large. Please shorten your input.");
   }
   

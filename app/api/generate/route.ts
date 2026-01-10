@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { openai, checkBudget } from "../../lib/openai";
 
 const USE_MOCK_DATA = false;
 
-// *** UPDATED ROBUST SYSTEM PROMPT ***
+// *** ROBUST SYSTEM PROMPT ***
 const ROBUST_SYSTEM_PROMPT = `
   You are **SuChef**, an expert AI cognitive cooking assistant.
 
@@ -79,7 +80,6 @@ const ROBUST_SYSTEM_PROMPT = `
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    // --- ACCEPT HISTORY & OPTION FROM FRONTEND ---
     const { mode, data, history, selectedOption } = body;
 
     // --- MOCK DATA CHECK ---
@@ -114,9 +114,7 @@ export async function POST(request: Request) {
     if (selectedOption) {
         userPrompt = `
         Task: The user has a list of ingredients: "${data}".
-        
         COMMAND: The user specifically chose to cook: "${selectedOption}".
-        
         Goal: Generate the full recipe for "${selectedOption}" using the provided ingredients.
         - IGNORE ingredients that don't fit "${selectedOption}".
         - Follow strict safety rules.
@@ -135,24 +133,42 @@ export async function POST(request: Request) {
         - **SAFETY:** Scan for toxicity first.
         `;
     } 
-    // SCENARIO 3: Recipe Simplification Mode
+    // SCENARIO 3: Recipe Simplification Mode (UPDATED FOR BLOG CLEANING + ATOMICITY)
     else {
         userPrompt = `
-        Task: Simplify this recipe text: "${data}". 
+        Task: You are processing a raw copy-paste from a cooking website. 
+        INPUT TEXT: "${data.substring(0, 15000)}" 
+        
         ${historyContext}
-        Constraint: If the text is very long, summarize it into key phases. Keep the tone calm.
+
+        ### STEP 1: DE-CLUTTER
+        - The input contains ads, personal stories, social media text ("Pinterest", "Share"), nutritional tables, and comments.
+        - **AGGRESSIVELY IGNORE** all non-cooking text. 
+        - Extract ONLY the *Ingredients* and the *Instructions*.
+
+        ### STEP 2: ATOMICITY (The Golden Rule)
+        - Once extracted, break the instructions down into **Atomic Steps**.
+        - **Rule:** One physical action per step.
+        - *Bad Example:* "Cook the pasta, drain it, and add sauce."
+        - *Good Example:* 1. "Boil a pot of salted water."
+            2. "Add pasta and cook for 10 mins."
+            3. "Drain the pasta."
+            4. "Add sauce to the pasta."
+        
+        ### STEP 3: OUTPUT JSON
+        - Return the cleaned, atomic recipe in the valid JSON schema.
         `;
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o", 
       messages: [
         { role: "system", content: ROBUST_SYSTEM_PROMPT },
         { role: "user", content: userPrompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.3, // Slightly higher temp for creative suggestions
-      max_tokens: 1000,
+      temperature: 0.2, // Lower temp helps it stay focused on facts vs creative writing
+      max_tokens: 2000, // Increased to handle long atomic lists
     });
 
     const resultText = completion.choices[0].message.content;

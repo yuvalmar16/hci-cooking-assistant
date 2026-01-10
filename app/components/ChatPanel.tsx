@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from "react";
-import { X, Send, Bot, Sparkles, Mic, Square } from "lucide-react";
+import { X, Send, Bot, Sparkles, Loader2 } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -11,112 +11,52 @@ interface ChatPanelProps {
   isOpen: boolean;
   onClose: () => void;
   currentStep: string;
-  autoStartListening?: boolean;
 }
 
-export function ChatPanel({ isOpen, onClose, currentStep, autoStartListening }: ChatPanelProps) {
+export function ChatPanel({ isOpen, onClose, currentStep }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: "Hi! I'm Susie. What do you need help with?" }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   
-  const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom whenever messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Handle Auto-Start from Voice Command
-  useEffect(() => {
-    if (isOpen && autoStartListening) {
-      setTimeout(() => {
-        startListening();
-      }, 300);
-    }
-    return () => {
-        stopListening();
-    };
-  }, [isOpen, autoStartListening]);
-
-  const toggleVoiceInput = () => {
-    if (isRecording) stopListening();
-    else startListening();
-  };
-
-  const startListening = () => {
-    if (typeof window === "undefined") return;
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
-
-    if (recognitionRef.current) return;
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = true;
-    recognition.continuous = false; 
-
-    recognition.onstart = () => setIsRecording(true);
-    
-    recognition.onend = () => {
-        setIsRecording(false);
-        recognitionRef.current = null;
-    };
-
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results)
-        .map((result: any) => result[0].transcript)
-        .join('');
-      setInput(transcript);
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-  };
-
-  const stopListening = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-      setIsRecording(false);
-    }
-  };
-
-  // --- THE REAL CONNECTION ---
+  // --- SEND MESSAGE ---
   const handleSend = async () => {
     if (!input.trim()) return;
 
     const userMessage = input;
     setInput(""); // Clear input immediately
-    
-    // Add user message to UI
+
+    // Add user message to history
     const newHistory = [...messages, { role: "user", content: userMessage } as Message];
     setMessages(newHistory);
     setIsLoading(true);
 
     try {
-      // Call the Real API
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: newHistory, // Send conversation history
-          context: currentStep, // Send the current cooking step (e.g., "Chop onions")
+          messages: newHistory,
+          context: currentStep, 
         }),
       });
 
       const data = await response.json();
-
       if (!response.ok) throw new Error(data.error || "Failed to fetch");
 
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
 
     } catch (error) {
       console.error(error);
-      setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I'm having trouble connecting to the cloud right now." }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I'm having trouble connecting right now." }]);
     } finally {
       setIsLoading(false);
     }
@@ -179,16 +119,17 @@ export function ChatPanel({ isOpen, onClose, currentStep, autoStartListening }: 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder={isRecording ? "Listening..." : "Ask Susie..."}
-            className={`flex-1 p-3 pr-12 rounded-xl border focus:outline-none focus:ring-2 transition-all ${isRecording ? "border-red-400 bg-red-50 placeholder-red-400" : "border-stone-300 focus:border-emerald-500"}`}
+            placeholder="Ask Susie a question..."
+            className="flex-1 p-3 pr-4 rounded-xl border border-stone-300 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 transition-all"
+            autoFocus
           />
           
-          <button onClick={toggleVoiceInput} className={`absolute right-14 p-2 rounded-full ${isRecording ? "text-red-600 animate-pulse" : "text-stone-400 hover:text-stone-600"}`}>
-            {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
-          </button>
-          
-          <button onClick={handleSend} disabled={!input.trim() || isLoading} className="p-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-            <Send className="w-5 h-5" />
+          <button 
+            onClick={handleSend} 
+            disabled={!input.trim() || isLoading} 
+            className="p-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-95"
+          >
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
           </button>
         </div>
       </div>

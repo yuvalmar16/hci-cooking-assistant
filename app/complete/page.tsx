@@ -6,11 +6,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Shell } from "../components/Shell";
-import { Star, Home, Send, ChefHat, RotateCcw, Loader2 } from "lucide-react";
+import { Star, Home, Send, ChefHat, RotateCcw, Loader2, Sparkles, Check, MessageCircle } from "lucide-react";
 
 export default function MealCompletePage() {
   const router = useRouter();
   const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [recipeTitle, setRecipeTitle] = useState("Your Dish");
@@ -55,7 +56,6 @@ export default function MealCompletePage() {
     }
 
     if (!inputData) {
-        alert("Could not find previous ingredients. Please start over.");
         router.push("/");
         return;
     }
@@ -89,144 +89,153 @@ export default function MealCompletePage() {
         setIsRetrying(false);
       } else {
         localStorage.setItem("currentRecipe", JSON.stringify(data));
-        
-        // *** CRITICAL FIX: FORCE RESET TO STEP 0 ***
         localStorage.setItem("cookingStep", "0");
-
         router.push("/overview");
       }
     } catch (e) {
       console.error(e);
-      alert("Failed to restart. Please try again.");
       setIsRetrying(false);
     }
   };
 
   return (
-    <Shell>
-      <div className="min-h-[80vh] flex flex-col items-center justify-center space-y-8 pb-20 relative overflow-hidden">
-        
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-             <div className="absolute top-10 left-[20%] text-emerald-200 animate-bounce-slow text-4xl">🎉</div>
-             <div className="absolute top-40 right-[15%] text-orange-200 animate-pulse text-5xl">✨</div>
-             <div className="absolute bottom-20 left-[10%] text-blue-200 animate-bounce text-3xl">🎊</div>
-        </div>
-
-        <div className="text-center space-y-4 z-10 animate-in zoom-in duration-500">
-          <div className="inline-flex p-5 bg-emerald-100 text-emerald-600 rounded-full shadow-lg mb-2">
-            <ChefHat className="w-12 h-12" />
-          </div>
-          <h1 className="text-5xl md:text-7xl font-bold text-stone-800 tracking-tight font-serif">
-            Bon Appétit!
-          </h1>
-          <p className="text-xl md:text-2xl text-stone-500 font-light">
-            You cooked <span className="font-semibold text-emerald-700">{recipeTitle}</span>.
-          </p>
-        </div>
-
-        <div className="w-full max-w-lg bg-white rounded-3xl shadow-xl border border-stone-100 overflow-hidden z-10 animate-in slide-in-from-bottom-10 fade-in duration-700 delay-200">
+    <Shell className="min-h-screen bg-stone-50 overflow-hidden relative flex flex-col items-center justify-center py-12">
+      
+      {/* --- BACKGROUND EFFECTS --- */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-emerald-200/30 rounded-full blur-3xl animate-blob"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
           
-          <div className="bg-stone-50 p-6 border-b border-stone-100 flex items-center gap-4">
-            <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-md">
-              <span className="font-bold text-lg">S</span>
+          {/* Floating Confetti */}
+          <div className="absolute top-1/4 left-1/4 text-4xl animate-bounce-slow opacity-20">🎉</div>
+          <div className="absolute top-1/3 right-1/4 text-5xl animate-pulse opacity-20 delay-700">✨</div>
+          <div className="absolute bottom-1/3 left-1/3 text-3xl animate-bounce opacity-20 delay-1000">🍳</div>
+      </div>
+
+      {/* --- MAIN CARD --- */}
+      <div className="w-full max-w-2xl relative z-10">
+        
+        {/* Header Section */}
+        <div className="text-center mb-10 space-y-4 animate-in slide-in-from-bottom-8 duration-700">
+            <div className="inline-flex p-5 bg-white shadow-xl rounded-full mb-2">
+                <ChefHat className="w-12 h-12 text-stone-800" />
             </div>
-            <div>
-              <h3 className="font-bold text-stone-800">SuChef (SouZie)</h3>
-              <p className="text-xs text-stone-500 flex items-center gap-1">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Online
-              </p>
-            </div>
-          </div>
-
-          <div className="p-6 space-y-6 bg-stone-50/30">
-            
-            <div className="flex gap-4">
-               <div className="w-8 h-8 bg-emerald-600 rounded-full shrink-0 flex items-center justify-center text-white text-xs mt-1">S</div>
-               <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm text-stone-700 border border-stone-100">
-                 <p>Wow! That smells delicious from here! 😋</p>
-                 <p className="mt-2">Be honest, how did it turn out? I want to learn for next time!</p>
-               </div>
-            </div>
-
-            {isSubmitted ? (
-               <div className="space-y-6">
-                 <div className="flex gap-4 flex-row-reverse">
-                    <div className="w-8 h-8 bg-stone-800 rounded-full shrink-0 flex items-center justify-center text-white text-xs mt-1">You</div>
-                    <div className="bg-stone-800 text-white p-4 rounded-2xl rounded-tr-none shadow-md">
-                      <p>{feedback}</p>
-                      <div className="flex gap-1 mt-2">
-                        {[...Array(rating)].map((_, i) => (
-                           <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        ))}
-                      </div>
-                    </div>
-                 </div>
-                 
-                 <div className="flex gap-4 animate-in fade-in slide-in-from-left-2 duration-500">
-                    <div className="w-8 h-8 bg-emerald-600 rounded-full shrink-0 flex items-center justify-center text-white text-xs mt-1">S</div>
-                    <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm text-stone-700 border border-stone-100">
-                      <p className="text-emerald-700 font-medium">Thanks! I've saved this to your <b>Taste Profile</b>.</p>
-                      <p className="text-sm text-stone-400 mt-1">
-                          If you retry this dish, I'll adapt it! 🧠
-                      </p>
-                    </div>
-                 </div>
-               </div>
-            ) : (
-               <form onSubmit={handleSubmit} className="space-y-4">
-                 <div className="flex justify-center gap-2 py-2">
-                   {[1, 2, 3, 4, 5].map((star) => (
-                     <button
-                       key={star}
-                       type="button"
-                       onClick={() => setRating(star)}
-                       className={`transition-all hover:scale-110 ${rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-stone-300'}`}
-                     >
-                       <Star className="w-8 h-8" />
-                     </button>
-                   ))}
-                 </div>
-
-                 <div className="relative">
-                   <textarea 
-                     value={feedback}
-                     onChange={(e) => setFeedback(e.target.value)}
-                     placeholder="Tell SouZie how it tastes..."
-                     className="w-full p-4 pr-12 rounded-xl border-2 border-stone-200 focus:border-emerald-500 focus:ring-0 outline-none resize-none bg-white h-24"
-                     onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); } }}
-                   />
-                   <button 
-                     type="submit"
-                     disabled={!feedback || rating === 0}
-                     className="absolute bottom-3 right-3 p-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                   >
-                     <Send className="w-4 h-4" />
-                   </button>
-                 </div>
-               </form>
-            )}
-
-          </div>
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-stone-900 tracking-tight">
+                Bon Appétit!
+            </h1>
+            <p className="text-xl text-stone-500 font-light">
+                You successfully cooked <span className="font-semibold text-emerald-700">{recipeTitle}</span>.
+            </p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 w-full max-w-lg">
+        {/* Feedback Card */}
+        <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/50 overflow-hidden animate-in zoom-in duration-500 delay-150">
+            
+            {/* AI Message Header */}
+            <div className="bg-stone-50/80 p-6 md:p-8 flex items-start gap-5 border-b border-stone-100">
+                <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shrink-0">
+                    <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                    <div className="flex items-baseline justify-between">
+                        <h3 className="font-bold text-stone-800 text-lg">Chef Susie</h3>
+                        <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded">AI Chef</span>
+                    </div>
+                    <div className="mt-2 bg-white p-4 rounded-2xl rounded-tl-none border border-stone-100 shadow-sm text-stone-600 leading-relaxed relative">
+                        <p>That smells amazing! 👩‍🍳 <br/> Be honest—how did it turn out? Your feedback helps me learn your taste for next time.</p>
+                        <div className="absolute top-0 left-0 -translate-x-2 -translate-y-2 w-4 h-4 bg-white border-t border-l border-stone-100 transform -rotate-45"></div>
+                    </div>
+                </div>
+            </div>
+
+            {/* User Interaction Area */}
+            <div className="p-6 md:p-8 bg-white">
+                
+                {!isSubmitted ? (
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        
+                        {/* Star Rating */}
+                        <div className="flex justify-center gap-3">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                    key={star}
+                                    type="button"
+                                    onClick={() => setRating(star)}
+                                    onMouseEnter={() => setHoverRating(star)}
+                                    onMouseLeave={() => setHoverRating(0)}
+                                    className="transition-transform hover:scale-125 focus:outline-none"
+                                >
+                                    <Star 
+                                        className={`w-10 h-10 transition-colors ${
+                                            (hoverRating || rating) >= star 
+                                            ? 'fill-amber-400 text-amber-400 drop-shadow-sm' 
+                                            : 'text-stone-200'
+                                        }`} 
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                        <p className="text-center text-sm font-medium text-stone-400 uppercase tracking-wider">
+                            {rating === 0 ? "Rate the Dish" : rating === 5 ? "It was perfect!" : rating >= 4 ? "Delicious" : "Could be better"}
+                        </p>
+
+                        {/* Input Field */}
+                        <div className="relative group">
+                            <div className="absolute top-4 left-4 text-stone-400">
+                                <MessageCircle className="w-5 h-5" />
+                            </div>
+                            <textarea 
+                                value={feedback}
+                                onChange={(e) => setFeedback(e.target.value)}
+                                placeholder="Too salty? Needs more spice? Tell me..."
+                                className="w-full p-4 pl-12 pr-14 rounded-2xl bg-stone-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white focus:ring-0 outline-none resize-none h-32 transition-all text-stone-700 placeholder:text-stone-400"
+                                onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); } }}
+                            />
+                            <button 
+                                type="submit"
+                                disabled={!feedback || rating === 0}
+                                className="absolute bottom-3 right-3 p-2 bg-emerald-600 text-white rounded-xl shadow-lg hover:bg-emerald-700 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95"
+                            >
+                                <Send className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </form>
+                ) : (
+                    /* Success State */
+                    <div className="py-8 text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600 mb-4">
+                            <Check className="w-10 h-10" />
+                        </div>
+                        <div>
+                            <h3 className="text-2xl font-bold text-stone-800">Feedback Saved!</h3>
+                            <p className="text-stone-500 mt-2 max-w-xs mx-auto">
+                                I've updated your <span className="font-semibold text-emerald-600">Taste Profile</span>. Next time, I'll adjust the recipe to fit your style perfectly.
+                            </p>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="flex flex-col md:flex-row gap-4 mt-8">
             {isSubmitted && (
                 <button
-                onClick={handleCookAgain}
-                disabled={isRetrying}
-                className="flex-1 flex items-center justify-center gap-2 px-8 py-4 bg-emerald-600 text-white rounded-full font-bold shadow-xl hover:bg-emerald-700 hover:scale-105 active:scale-95 transition-all"
+                    onClick={handleCookAgain}
+                    disabled={isRetrying}
+                    className="flex-1 py-4 px-6 bg-emerald-600 text-white rounded-2xl font-bold text-lg shadow-xl hover:bg-emerald-700 hover:shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95"
                 >
-                {isRetrying ? <Loader2 className="w-5 h-5 animate-spin"/> : <RotateCcw className="w-5 h-5" />}
-                Cook Again (Adapt)
+                    {isRetrying ? <Loader2 className="w-5 h-5 animate-spin"/> : <RotateCcw className="w-5 h-5" />}
+                    Cook Again (Adapted)
                 </button>
             )}
-
+            
             <button
-            onClick={() => router.push("/")}
-            className={`flex items-center justify-center gap-2 px-8 py-4 bg-stone-900 text-white rounded-full font-bold shadow-xl hover:scale-105 active:scale-95 transition-all ${isSubmitted ? 'flex-1' : 'w-full'}`}
+                onClick={() => router.push("/")}
+                className={`py-4 px-6 bg-white text-stone-600 border-2 border-white hover:border-stone-200 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 active:scale-95 ${isSubmitted ? 'flex-1' : 'w-full'}`}
             >
-            <Home className="w-5 h-5" />
-            Back to Kitchen
+                <Home className="w-5 h-5" />
+                Back Home
             </button>
         </div>
 
