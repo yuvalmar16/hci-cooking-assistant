@@ -223,7 +223,7 @@ export default function OverviewPage() {
             <div className="bg-stone-50 rounded-3xl p-8 border border-stone-100">
                <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-stone-800 flex items-center gap-2">
-                      <Utensils className="w-5 h-5 text-emerald-600" /> Mise en Place
+                      <Utensils className="w-5 h-5 text-emerald-600" /> Prep List
                   </h3>
                   <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">
                     {recipe.ingredients?.length || 0} Items
