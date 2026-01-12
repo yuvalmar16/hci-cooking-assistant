@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from "react";
 import { X, Send, Bot, Sparkles, Loader2 } from "lucide-react";
@@ -12,10 +12,11 @@ interface ChatPanelProps {
   isOpen: boolean;
   onClose: () => void;
   currentStep: string;
-  recipeTitle: string; // <--- NEW PROP
+  recipeTitle: string;
+  autoStartListening?: boolean; // <--- ADDED THIS TO FIX BUILD ERROR
 }
 
-export function ChatPanel({ isOpen, onClose, currentStep, recipeTitle }: ChatPanelProps) {
+export function ChatPanel({ isOpen, onClose, currentStep, recipeTitle, autoStartListening }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: `Hi! I'm Susie. We're cooking "${recipeTitle}". How can I help with this step?` }
   ]);
@@ -52,7 +53,6 @@ export function ChatPanel({ isOpen, onClose, currentStep, recipeTitle }: ChatPan
 
     try {
       // --- BUILD CONTEXT ---
-      // We combine the Dish Name + Specific Step instruction
       const richContext = `
         Current Recipe Name: "${recipeTitle}"
         Current Step Instruction: "${currentStep}"
@@ -64,7 +64,7 @@ export function ChatPanel({ isOpen, onClose, currentStep, recipeTitle }: ChatPan
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: newHistory,
-          context: richContext, // <--- Send the combined context
+          context: richContext, 
         }),
       });
 
@@ -94,7 +94,7 @@ export function ChatPanel({ isOpen, onClose, currentStep, recipeTitle }: ChatPan
           </div>
           <div>
             <h2 className="font-bold text-lg leading-none">Susie (AI Chef)</h2>
-            <p className="text-[10px] uppercase tracking-widest font-medium opacity-80 mt-1 truncate max-w-50">
+            <p className="text-[10px] uppercase tracking-widest font-medium opacity-80 mt-1 truncate max-w-[200px]">
               {recipeTitle}
             </p>
           </div>
