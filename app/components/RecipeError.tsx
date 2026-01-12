@@ -98,7 +98,7 @@ export function RecipeError({ title, description, onRetry }: RecipeErrorProps) {
       <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-stone-100 relative group">
         
         {/* Header Background */}
-        <div className={`h-32 w-full bg-gradient-to-b ${content.gradient} relative overflow-hidden`}>
+        <div className={`h-32 w-full bg-linear-to-b ${content.gradient} relative overflow-hidden`}>
             {/* Decorative circles */}
             <div className="absolute top-[-20%] left-[-10%] w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
             <div className="absolute bottom-[-20%] right-[-10%] w-40 h-40 bg-white/30 rounded-full blur-2xl"></div>

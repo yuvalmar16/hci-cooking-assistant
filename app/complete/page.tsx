@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Shell } from "../components/Shell";
-import { Star, Home, Send, ChefHat, RotateCcw, Loader2, Sparkles, Check, MessageCircle } from "lucide-react";
+import { Star, Home, Send, ChefHat, Sparkles, Check, MessageCircle } from "lucide-react";
 
 export default function MealCompletePage() {
   const router = useRouter();
@@ -15,7 +15,6 @@ export default function MealCompletePage() {
   const [feedback, setFeedback] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [recipeTitle, setRecipeTitle] = useState("Your Dish");
-  const [isRetrying, setIsRetrying] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("currentRecipe");
@@ -41,61 +40,6 @@ export default function MealCompletePage() {
     localStorage.setItem("cookingHistory", JSON.stringify(updatedHistory));
     
     setIsSubmitted(true);
-  };
-
-  const handleCookAgain = async () => {
-    setIsRetrying(true);
-    const mode = localStorage.getItem("cookingMode");
-    let inputData = "";
-
-    if (mode === "recipe") {
-        inputData = localStorage.getItem("lastRecipeText") || "";
-    } else {
-        const rawIng = localStorage.getItem("lastIngredients");
-        if (rawIng) inputData = JSON.parse(rawIng).join(", ");
-    }
-
-    if (!inputData) {
-        router.push("/");
-        return;
-    }
-
-    const rawHistory = localStorage.getItem("cookingHistory");
-    let formattedHistory = "";
-    if (rawHistory) {
-      try {
-        const historyItems = JSON.parse(rawHistory);
-        formattedHistory = historyItems.slice(0, 3).map((item: any) => 
-          `- When cooking "${item.title}", User rated it ${item.rating}/5 and said: "${item.feedback}"`
-        ).join("\n");
-      } catch (e) { console.error(e); }
-    }
-
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          mode: mode || "ingredients", 
-          data: inputData, 
-          history: formattedHistory 
-        }),
-      });
-      
-      const data = await res.json();
-      
-      if (data.error) {
-        alert(data.error);
-        setIsRetrying(false);
-      } else {
-        localStorage.setItem("currentRecipe", JSON.stringify(data));
-        localStorage.setItem("cookingStep", "0");
-        router.push("/overview");
-      }
-    } catch (e) {
-      console.error(e);
-      setIsRetrying(false);
-    }
   };
 
   return (
@@ -218,24 +162,13 @@ export default function MealCompletePage() {
         </div>
 
         {/* Footer Actions */}
-        <div className="flex flex-col md:flex-row gap-4 mt-8">
-            {isSubmitted && (
-                <button
-                    onClick={handleCookAgain}
-                    disabled={isRetrying}
-                    className="flex-1 py-4 px-6 bg-emerald-600 text-white rounded-2xl font-bold text-lg shadow-xl hover:bg-emerald-700 hover:shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95"
-                >
-                    {isRetrying ? <Loader2 className="w-5 h-5 animate-spin"/> : <RotateCcw className="w-5 h-5" />}
-                    Cook Again (Adapted)
-                </button>
-            )}
-            
+        <div className="mt-8 flex justify-center">
             <button
                 onClick={() => router.push("/")}
-                className={`py-4 px-6 bg-white text-stone-600 border-2 border-white hover:border-stone-200 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 active:scale-95 ${isSubmitted ? 'flex-1' : 'w-full'}`}
+                className="w-full md:w-auto px-12 py-4 bg-white text-stone-600 border-2 border-white hover:border-stone-200 rounded-4xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 active:scale-95"
             >
                 <Home className="w-5 h-5" />
-                Back Home
+                Back to Kitchen
             </button>
         </div>
 

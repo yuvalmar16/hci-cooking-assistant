@@ -11,7 +11,6 @@ import { Shell } from "../components/Shell";
 import { Recipe, Step } from "../types"; 
 import { useTimers } from "../context/TimerContext";
 import { ChatPanel } from "../components/ChatPanel"; 
-// *** FIXED IMPORT: Added Sparkles ***
 import { Lightbulb, TrendingUp, Mic, MicOff, CheckCircle, Utensils, Info, Play, Pause, Clock, Sparkles } from "lucide-react";
 
 // --- HELPERS ---
@@ -423,7 +422,14 @@ export default function CookingPage() {
         </div>
       )}
 
-      <ChatPanel isOpen={isChatOpen} onClose={closeChat} currentStep={currentStep.instruction} />
+      {/* --- CHAT PANEL (UPDATED) --- */}
+      <ChatPanel 
+        isOpen={isChatOpen} 
+        onClose={closeChat} 
+        currentStep={currentStep.instruction} 
+        recipeTitle={recipe.title || "Your Dish"} 
+        autoStartListening={triggeredByVoice}
+      />
 
       {/* --- HEADER CONTROLS --- */}
       <div className="absolute top-0 right-0 p-6 flex flex-col items-end gap-3 z-50">
@@ -601,7 +607,7 @@ export default function CookingPage() {
         </button>
         <button 
             onClick={handleNext} 
-            className="flex-1 md:flex-none px-12 py-5 bg-stone-900 text-white text-xl font-bold rounded-4xl shadow-2xl hover:bg-black hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-3"
+            className="flex-1 md:flex-none px-12 py-5 bg-stone-900 text-white text-xl font-bold rounded-[2rem] shadow-2xl hover:bg-black hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-3"
         >
           {isLastStep ? "Finish Cooking" : "Next Step →"}
         </button>

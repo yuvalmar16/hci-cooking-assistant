@@ -13,10 +13,14 @@ import { Loader2, ChefHat, ArrowRight, X, Plus, Sparkles, Utensils } from "lucid
 export default function IngredientsPage() {
   const [input, setInput] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorData, setErrorData] = useState<{title: string, description: string} | null>(null);
   
-  // --- SUGGESTIONS STATE ---
+  // State for the main "Find Recipes" button
+  const [isMainLoading, setIsMainLoading] = useState(false);
+  
+  // State for specific suggestion cards (holds the title of the chosen dish)
+  const [loadingSuggestion, setLoadingSuggestion] = useState<string | null>(null);
+  
+  const [errorData, setErrorData] = useState<{title: string, description: string} | null>(null);
   const [suggestions, setSuggestions] = useState<any[] | null>(null);
 
   const router = useRouter();
@@ -46,9 +50,15 @@ export default function IngredientsPage() {
   const handleFindRecipes = async (chosenOption?: string) => {
     if (ingredients.length === 0) return;
 
-    setIsLoading(true);
+    // 1. Set the correct loading state
+    if (chosenOption) {
+        setLoadingSuggestion(chosenOption);
+    } else {
+        setIsMainLoading(true);
+    }
+
     setErrorData(null);
-    if (!chosenOption) setSuggestions(null); 
+    // Note: We don't nullify suggestions immediately so the modal stays open while loading the specific dish
 
     const rawHistory = localStorage.getItem("cookingHistory");
     let formattedHistory = "";
@@ -81,14 +91,16 @@ export default function IngredientsPage() {
           title: data.title || "System Error",
           description: data.description || "Something went wrong."
         });
-        setIsLoading(false);
+        setIsMainLoading(false);
+        setLoadingSuggestion(null);
         return; 
       }
 
       // 2. Handle Suggestions
       if (data.type === "suggestions" && data.options) {
         setSuggestions(data.options);
-        setIsLoading(false);
+        setIsMainLoading(false);
+        setLoadingSuggestion(null);
         return; 
       }
 
@@ -103,7 +115,8 @@ export default function IngredientsPage() {
     } catch (e) {
       console.error(e);
       setErrorData({ title: "Connection Error", description: "Could not reach the chef." });
-      setIsLoading(false);
+      setIsMainLoading(false);
+      setLoadingSuggestion(null);
     }
   };
 
@@ -114,6 +127,9 @@ export default function IngredientsPage() {
       </Shell>
     );
   }
+
+  // Helper to check if anything is loading
+  const isAnyLoading = isMainLoading || loadingSuggestion !== null;
 
   // --- MAIN UI ---
   return (
@@ -151,7 +167,7 @@ export default function IngredientsPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                disabled={isLoading}
+                disabled={isAnyLoading}
                 placeholder="Type an ingredient (e.g. Chicken, Basil, Lemon)..."
                 className="w-full text-xl md:text-2xl p-6 pr-16 bg-stone-50 border-2 border-stone-100 rounded-2xl focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-50 outline-none transition-all placeholder:text-stone-300"
                 autoFocus
@@ -179,7 +195,7 @@ export default function IngredientsPage() {
                             <span className="text-lg font-medium text-stone-700 capitalize">{ing}</span>
                             <button 
                                 onClick={() => removeIngredient(index)} 
-                                disabled={isLoading} 
+                                disabled={isAnyLoading} 
                                 className="p-1 text-stone-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                             >
                                 <X className="w-4 h-4" />
@@ -201,10 +217,10 @@ export default function IngredientsPage() {
         <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-stone-100 md:static md:bg-transparent md:border-0 md:p-0 mt-8 flex justify-end">
             <button
                 onClick={() => handleFindRecipes()}
-                disabled={ingredients.length === 0 || isLoading}
+                disabled={ingredients.length === 0 || isAnyLoading}
                 className="w-full md:w-auto px-10 py-5 bg-stone-900 text-white text-xl font-bold rounded-full shadow-2xl hover:bg-black hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all flex items-center justify-center gap-3"
             >
-                {isLoading ? <><Loader2 className="animate-spin" /> Chef is Thinking...</> : <>Find Recipes <ArrowRight className="w-5 h-5" /></>}
+                {isMainLoading ? <><Loader2 className="animate-spin" /> Chef is Thinking...</> : <>Find Recipes <ArrowRight className="w-5 h-5" /></>}
             </button>
         </div>
 
@@ -224,37 +240,63 @@ export default function IngredientsPage() {
               </div>
 
               <div className="grid md:grid-cols-3 gap-6">
-                {suggestions.map((opt, idx) => (
-                  <button 
-                    key={idx}
-                    onClick={() => handleFindRecipes(opt.title)}
-                    disabled={isLoading}
-                    className="flex flex-col text-left bg-white p-8 rounded-3xl border border-stone-100 shadow-xl hover:shadow-2xl hover:border-emerald-500 hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-emerald-400 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    
-                    <div className="bg-emerald-50 text-emerald-800 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg self-start mb-6 border border-emerald-100">
-                       Using {opt.keyIngredient}
-                    </div>
-                    
-                    <h3 className="text-2xl font-bold text-stone-900 mb-3 group-hover:text-emerald-700 transition-colors">
-                      {opt.title}
-                    </h3>
-                    
-                    <p className="text-stone-500 text-sm leading-relaxed mb-8 grow font-medium">
-                      {opt.description}
-                    </p>
-                    
-                    <div className="w-full py-4 rounded-xl bg-stone-50 border border-stone-200 text-stone-600 font-bold text-center group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-all flex items-center justify-center gap-2">
-                        {isLoading ? <Loader2 className="animate-spin w-4 h-4"/> : <>Select Dish <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform"/></>}
-                    </div>
-                  </button>
-                ))}
+                {suggestions.map((opt, idx) => {
+                  const isThisLoading = loadingSuggestion === opt.title;
+                  
+                  return (
+                    <button 
+                      key={idx}
+                      onClick={() => handleFindRecipes(opt.title)}
+                      disabled={isAnyLoading} // Disable ALL buttons if ANY is loading
+                      className={`flex flex-col text-left bg-white p-8 rounded-3xl border shadow-xl transition-all duration-500 group relative overflow-hidden ${
+                        isThisLoading 
+                          ? "border-emerald-500 ring-2 ring-emerald-100 bg-emerald-50/50" // Loading Style
+                          : "border-stone-100 hover:shadow-2xl hover:border-emerald-500 hover:-translate-y-2" // Default Style
+                      } ${isAnyLoading && !isThisLoading ? "opacity-50 grayscale cursor-not-allowed" : ""}`} // Disabled Style
+                    >
+                      
+                      {!isThisLoading && (
+                         <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-emerald-400 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      )}
+                      
+                      <div className="bg-emerald-50 text-emerald-800 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg self-start mb-6 border border-emerald-100">
+                         Using {opt.keyIngredient}
+                      </div>
+                      
+                      <h3 className="text-2xl font-bold text-stone-900 mb-3 group-hover:text-emerald-700 transition-colors">
+                        {opt.title}
+                      </h3>
+                      
+                      <p className="text-stone-500 text-sm leading-relaxed mb-8 grow font-medium">
+                        {opt.description}
+                      </p>
+                      
+                      <div className={`w-full py-4 rounded-xl font-bold text-center transition-all flex items-center justify-center gap-2 ${
+                          isThisLoading 
+                          ? "bg-transparent text-emerald-600" 
+                          : "bg-stone-50 border border-stone-200 text-stone-600 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600"
+                      }`}>
+                          {isThisLoading ? (
+                              <><Loader2 className="animate-spin w-5 h-5"/> Preparing...</>
+                          ) : (
+                              <>Select Dish <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform"/></>
+                          )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
               
               <div className="mt-10 text-center">
-                <button onClick={() => setSuggestions(null)} className="text-stone-400 hover:text-stone-800 font-bold text-sm uppercase tracking-widest transition-colors">
-                  Cancel Selection
+                <button 
+                    onClick={() => {
+                        setSuggestions(null);
+                        setLoadingSuggestion(null);
+                    }} 
+                    disabled={isAnyLoading}
+                    className="text-stone-400 hover:text-stone-800 font-bold text-sm uppercase tracking-widest transition-colors flex items-center gap-2 mx-auto disabled:opacity-50"
+                >
+                  <ArrowRight className="w-4 h-4 rotate-180" /> Back to Ingredients
                 </button>
               </div>
 

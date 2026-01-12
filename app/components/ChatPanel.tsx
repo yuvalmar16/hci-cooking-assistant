@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from "react";
 import { X, Send, Bot, Sparkles, Loader2 } from "lucide-react";
@@ -11,21 +12,31 @@ interface ChatPanelProps {
   isOpen: boolean;
   onClose: () => void;
   currentStep: string;
+  recipeTitle: string; // <--- NEW PROP
 }
 
-export function ChatPanel({ isOpen, onClose, currentStep }: ChatPanelProps) {
+export function ChatPanel({ isOpen, onClose, currentStep, recipeTitle }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hi! I'm Susie. What do you need help with?" }
+    { role: "assistant", content: `Hi! I'm Susie. We're cooking "${recipeTitle}". How can I help with this step?` }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom whenever messages change
+  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Reset/Update chat if the recipe changes
+  useEffect(() => {
+    if (messages.length === 1 && messages[0].role === 'assistant') {
+        setMessages([
+            { role: "assistant", content: `Hi! I'm Susie. We're cooking "${recipeTitle}". How can I help with this step?` }
+        ]);
+    }
+  }, [recipeTitle]);
 
   // --- SEND MESSAGE ---
   const handleSend = async () => {
@@ -40,12 +51,20 @@ export function ChatPanel({ isOpen, onClose, currentStep }: ChatPanelProps) {
     setIsLoading(true);
 
     try {
+      // --- BUILD CONTEXT ---
+      // We combine the Dish Name + Specific Step instruction
+      const richContext = `
+        Current Recipe Name: "${recipeTitle}"
+        Current Step Instruction: "${currentStep}"
+        User Goal: The user is currently cooking this step. Provide helpful, short, specific culinary advice.
+      `;
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: newHistory,
-          context: currentStep, 
+          context: richContext, // <--- Send the combined context
         }),
       });
 
@@ -69,9 +88,16 @@ export function ChatPanel({ isOpen, onClose, currentStep }: ChatPanelProps) {
       
       {/* Header */}
       <div className="p-4 bg-emerald-600 text-white flex justify-between items-center shadow-md shrink-0">
-        <div className="flex items-center gap-2">
-          <Bot className="w-6 h-6" />
-          <h2 className="font-bold text-lg">Susie (AI Chef)</h2>
+        <div className="flex items-center gap-3">
+          <div className="bg-white/20 p-2 rounded-full">
+            <Bot className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h2 className="font-bold text-lg leading-none">Susie (AI Chef)</h2>
+            <p className="text-[10px] uppercase tracking-widest font-medium opacity-80 mt-1 truncate max-w-50">
+              {recipeTitle}
+            </p>
+          </div>
         </div>
         <button onClick={onClose} className="p-1 hover:bg-emerald-700 rounded-full transition-colors">
           <X className="w-6 h-6" />

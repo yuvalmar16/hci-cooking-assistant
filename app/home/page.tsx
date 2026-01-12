@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shell } from "../components/Shell";
-import { ChefHat, ShoppingBasket, ScrollText, Sparkles, ArrowRight } from "lucide-react";
+import { ChefHat, ShoppingBasket, ScrollText, Sparkles, ArrowRight, History } from "lucide-react";
 
 export default function HomePage() {
   const [name, setName] = useState("");
@@ -38,18 +38,36 @@ export default function HomePage() {
         <div className="absolute -bottom-8 left-20 w-64 h-64 bg-stone-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
 
         {/* --- HEADER SECTION --- */}
-        <header className="mb-16 mt-8 relative z-10 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 text-stone-500 text-xs font-bold uppercase tracking-widest mb-4">
-            <Sparkles className="w-3 h-3 text-emerald-500" />
-            AI Kitchen Assistant
+        <header className="mb-16 mt-8 relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+              
+              {/* Text Area */}
+              <div className="text-center md:text-left flex-1">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 text-stone-500 text-xs font-bold uppercase tracking-widest mb-4">
+                    <Sparkles className="w-3 h-3 text-emerald-500" />
+                    AI Kitchen Assistant
+                  </div>
+                  
+                  <h1 className="text-5xl md:text-7xl font-bold text-stone-800 tracking-tight font-serif">
+                    {greeting}, <span className="text-emerald-700">{name}</span>.
+                  </h1>
+                  <p className="mt-4 text-xl md:text-2xl text-stone-500 font-light max-w-2xl">
+                    The kitchen is yours. What culinary mission shall we tackle today?
+                  </p>
+              </div>
+
+              {/* History Button */}
+              <button 
+                onClick={() => router.push("/history")}
+                className="hidden md:flex flex-col items-center gap-2 group"
+                title="View Culinary Journal"
+              >
+                <div className="w-14 h-14 bg-white border-2 border-stone-100 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-emerald-600 group-hover:border-emerald-200 shadow-sm hover:shadow-md transition-all duration-300">
+                    <History className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 group-hover:text-emerald-600 transition-colors">Journal</span>
+              </button>
           </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold text-stone-800 tracking-tight font-serif">
-            {greeting}, <span className="text-emerald-700">{name}</span>.
-          </h1>
-          <p className="mt-4 text-xl md:text-2xl text-stone-500 font-light max-w-2xl">
-            The kitchen is yours. What culinary mission shall we tackle today?
-          </p>
         </header>
 
         {/* --- ACTION CARDS --- */}
