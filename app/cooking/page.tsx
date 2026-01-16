@@ -244,7 +244,7 @@ export default function CookingPage() {
   const getOptimizationSuggestion = () => {
     if (!activeTimer || !nextStep || !currentStep) return null;
     
-    const isLongWait = activeTimer.status === 'running' && activeTimer.remainingSeconds > 120; 
+    const isLongWait = activeTimer.status === 'running' && activeTimer.remainingSeconds > 180; 
     const isNextManual = !nextStep.isFixedTime; 
     const hasDependency = hasIngredientDependency(currentStep.instruction, nextStep.instruction);
 
@@ -607,7 +607,7 @@ export default function CookingPage() {
         </button>
         <button 
             onClick={handleNext} 
-            className="flex-1 md:flex-none px-12 py-5 bg-stone-900 text-white text-xl font-bold rounded-[2rem] shadow-2xl hover:bg-black hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-3"
+            className="flex-1 md:flex-none px-12 py-5 bg-stone-900 text-white text-xl font-bold rounded-4xl shadow-2xl hover:bg-black hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-3"
         >
           {isLastStep ? "Finish Cooking" : "Next Step →"}
         </button>
