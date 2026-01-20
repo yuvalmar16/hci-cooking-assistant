@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 👨‍🍳 SouZie - SuChef 
 
-## Getting Started
+**Your AI-Powered Cognitive Sous-Chef**
 
-First, run the development server:
+SouZie is not just another recipe generator—it’s a **Closed-Loop Kitchen Operating System**. It transforms unstructured inputs like messy blog recipes or random fridge ingredients into dynamic, hands-free cooking workflows, powered by AI with safety-first orchestration.
 
+## 📋 Table of Contents
+
+- [🚀 Key Features](#-key-features)
+- [📖 How to Use](#-how-to-use)
+- [🛠️ Installation](#-installation)
+- [⚙️ Configuration](#-configuration)
+- [▶️ Run the App](#️-run-the-app)
+- [🏗️ Tech Stack](#-tech-stack)
+- [🧯 Troubleshooting & Safety](#-troubleshooting--safety)
+- [📜 License](#-license)
+---
+
+## 🚀 Key Features
+
+### 🧠 Hybrid Control Architecture
+- Deterministic state machine controls the LLM outputs.
+- Guarantees reliable logic, safety, and step-by-step guidance.
+
+### 🗣️ Hands-Free Voice Orchestrator
+- **Global Command Loop**: Navigate with voice ("Next", "Back", "Start Timer").
+- **Contextual Chat ("Susie")**: Say "Hey Susie" to ask specific questions (e.g., “I dont have the instructions (for cooking rice) what are they?”).
+
+### ⚡ Smart Optimization Engine (DAG Logic)
+- Dynamically analyzes recipe dependencies.
+- Suggests multitasking only when it's **safe** (e.g., "Chop onions while water boils").
+
+### ⏱️ Adaptive Pacing
+- Tracks your cooking speed and adapts timers & estimated completion.
+- Real-time "Dinner Ready" countdown that adjusts based on your personal **Velocity Factor**.
+
+### 👅 Taste Memory
+- Remembers your likes/dislikes (e.g., “Too spicy”, “Hate cilantro”," I didnt like the olives").
+- Adjusts future recipes automatically based on your Taste Profile.
+
+### 🛡️ The Hazmat Protocol (Safety & Error Handling)
+| Error Type       | Scenario Example                             | System Response                                         |
+|------------------|-----------------------------------------------|---------------------------------------------------------|
+| **Strictly Prohibited** | "Bleach", "Poison"                          | ❌ **Hard Block** – Refuses to proceed                   |
+| **Mixed Safety**       | "Chicken, Horse Meat"                       | 🛡️ **Safety Shield** – Prompts user to remove item       |
+| **Not a Meal**         | "Ketchup", "Salt", "Water"                  | ⚔️ **Chef Intervention** – Requests a real ingredient     |
+| **Gibberish**          | Random input                               | ❓ **Confusion Prompt** – Responds humorously & retries   |
+
+---
+
+## 📖 How to Use
+
+### 1. Setup & Login
+- Enter your name to start.
+- No password required; all data is stored locally for privacy.
+
+### 2. Input Phase
+Choose a mode:
+- **“I have ingredients”**: Enter what's in your fridge. If multiple proteins are listed, the system offers 3 dish concepts.
+- **“Paste Recipe”**: Input blog text (you can just copy and paste the enitre page). SuChef extracts clean, atomic instructions, removing ads, comments and unnecessary personal stories.
+
+### 3. Cooking Mode
+- Grant microphone permissions for hands-free mode.
+- Follow large, clear instructions step-by-step.
+- Use voice commands or tap buttons for timers.
+- Look for **Blue Box** smart tips for safe multitasking.
+- Chat with susie whenever you need. she will know your current step and what you are cooking ask whatever you'll like regarding the dish (speaking in other langauges is also optional).
+
+### 4. Feedback Loop
+- Rate your meal and leave a comment.
+- Use **"Cook Again"** to retry the dish with your feedback applied (e.g., “Less salty”).
+
+---
+
+## 🛠️ Installation
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/your-username/suchef.git
+cd suchef
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ⚙️ Configuration
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a .env.local file in the root directory with your OpenAI API key:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+OPENAI_API_KEY=sk-your-api-key-here
+```
 
-## Learn More
+## ▶️ Run the App
+```bash
+npm run dev
+```
+Then open http://localhost:3000
+ in your browser.
 
-To learn more about Next.js, take a look at the following resources:
+##🏗️ Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Layer           | Tech Used                                |
+| --------------- | ---------------------------------------- |
+| **Framework**   | Next.js 14 (App Router)                  |
+| **Language**    | TypeScript                               |
+| **Styling**     | Tailwind CSS, Lucide Icons               |
+| **AI Engine**   | OpenAI GPT-4o (via Server Actions)       |
+| **Voice Input** | Web Speech API (webkitSpeechRecognition) |
+| **State**       | React Hooks, LocalStorage Persistence    |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## 🧯 Troubleshooting & Safety
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### SuChef has built-in guardrails for both user safety and performance:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* Refuses toxic or non-food inputs
+
+* No multitasking during high attention demanding steps
+
+* Clarifies vague or incomplete inputs with humor and prompts
+
+* All data stored locally for privacy
+
+
