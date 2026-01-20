@@ -67,8 +67,9 @@ Choose a mode:
 - Chat with Susie whenever you need. She will know your current step and what you are cooking—ask whatever you like regarding the dish (speaking in other languages is also optional).
 
 ### 4. Feedback Loop
-- Rate your meal and leave a comment.
-- Use **"Cook Again"** to retry the dish with your feedback applied (e.g., “Less salty”).
+- Rate your meal and leave a comment' souzie will remember your preferences and keep it in your personal cooking journal.
+- Access cooking journal through the home screen, there you can see your coocked meals with their ratings and comments
+- Press cook again in the journal to generate the meal with your refinements from previous feedback (e.g "I didnt like the olives in the chicken and olives rice dish",so souzie will provide you recepie to "chicken and herb rice")
 
 ---
 
