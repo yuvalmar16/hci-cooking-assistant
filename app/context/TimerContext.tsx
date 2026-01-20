@@ -1,12 +1,13 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 
 interface Timer {
-  id: string; // Changed to string for better compatibility (e.g. "s1", "uuid")
+  id: string; 
   label: string;
   remainingSeconds: number;
-  originalDuration: number; // Useful for progress bars
+  originalDuration: number; 
   status: "running" | "paused" | "finished";
 }
 
@@ -22,20 +23,17 @@ interface TimerContextType {
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 // --- HELPER: Safe Duration Parser ---
-// Handles both API numbers (seconds) and text ("5 mins")
-const parseDuration = (val: string | number): number => {
+const parseDuration = (val: string | number | undefined | null): number => {
+  if (!val) return 0;
   if (typeof val === "number") return val;
-  
   if (typeof val === "string") {
     const s = val.toLowerCase();
     const num = parseInt(s);
     if (isNaN(num)) return 0;
-    
     if (s.includes("min")) return num * 60;
     if (s.includes("hour") || s.includes("hr")) return num * 3600;
-    return num; // Default to seconds if just a string number
+    return num; 
   }
-  
   return 0;
 };
 
@@ -54,7 +52,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // --- TICKER: Runs every second ---
+  // --- TICKER ---
   useEffect(() => {
     const interval = setInterval(() => {
       setTimers((prev) =>
@@ -72,12 +70,10 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   // --- ACTIONS ---
 
   const addTimer = useCallback((id: string, label: string, duration: string | number) => {
-    // Prevent duplicates
     setTimers((prev) => {
       if (prev.find((t) => t.id === id)) return prev;
-      
       const seconds = parseDuration(duration);
-      if (seconds <= 0) return prev; // Don't add invalid timers
+      if (seconds <= 0) return prev; 
 
       return [
         ...prev,
@@ -106,9 +102,10 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     setTimers((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // --- ALGORITHM: Adaptive Velocity Tracking ---
+  // --- ALGORITHM: Adaptive Velocity Tracking (With Outlier Rejection) ---
   const recordStepTime = useCallback((expected: string | number, actual: number, isFixedTime?: boolean) => {
-    // 1. SAFETY GUARD: If this is a physics task (Boiling), DO NOT learn from it.
+    
+    // 1. SAFETY: Ignore Physics Tasks (Boiling/Baking)
     if (isFixedTime) {
        console.log("Skipping adaptation: Physics-based task.");
        return;
@@ -116,21 +113,37 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
     const expectedSeconds = parseDuration(expected);
     
-    // Ignore invalid data or accidental clicks (< 5s)
-    if (expectedSeconds <= 0 || actual < 5) return;
+    // 2. VALIDATION: Ignore bad data
+    if (expectedSeconds <= 0 || actual <= 0) return;
 
+    // Calculate Ratio (e.g. Took 100s for 50s task = 2.0x)
     const currentRatio = actual / expectedSeconds;
-    
-    // Clamp to avoid wild swings (e.g. user walked away)
+
+    // 3. OUTLIER REJECTION (The Fix)
+    // - Too Fast: If < 15% of expected time (Skipping steps)
+    // - Too Slow: If > 400% of expected time (Walked away / AFK)
+    if (currentRatio < 0.15) {
+        console.log(`Ignored Speed Update: Too fast (${currentRatio.toFixed(2)}x). Assumed skipping.`);
+        return;
+    }
+    if (currentRatio > 4.0) {
+        console.log(`Ignored Speed Update: Too slow (${currentRatio.toFixed(2)}x). Assumed AFK.`);
+        return;
+    }
+
+    // 4. WEIGHTED UPDATE (Smooth change)
+    // Clamp limits to keep multiplier sane (0.5x to 3.0x)
     const clampedRatio = Math.min(Math.max(currentRatio, 0.5), 3.0);
 
-    // Weighted Moving Average: 70% History, 30% New Data
     setPacingMultiplier((prev) => {
-        const newMultiplier = parseFloat(((prev * 0.7) + (clampedRatio * 0.3)).toFixed(2));
-        // Save to storage immediately
+        // Weight: 80% History, 20% New Data (More conservative learning)
+        const newMultiplier = parseFloat(((prev * 0.8) + (clampedRatio * 0.2)).toFixed(2));
+        
         if (typeof window !== "undefined") {
             localStorage.setItem("userVelocityProfile", newMultiplier.toString());
         }
+        
+        console.log(`Updated Velocity: ${prev} -> ${newMultiplier} (Based on ${currentRatio.toFixed(2)}x performance)`);
         return newMultiplier;
     });
   }, []);

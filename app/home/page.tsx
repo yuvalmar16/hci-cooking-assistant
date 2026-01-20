@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shell } from "../components/Shell";
-import { ChefHat, ShoppingBasket, ScrollText, Sparkles, ArrowRight, History } from "lucide-react";
+import { ChefHat, ShoppingBasket, ScrollText, Sparkles, ArrowRight, History, LogOut } from "lucide-react";
 
 export default function HomePage() {
   const [name, setName] = useState("");
@@ -27,6 +27,18 @@ export default function HomePage() {
     else if (hour < 18) setGreeting("Good afternoon");
     else setGreeting("Good evening");
   }, [router]);
+
+  // --- UPDATED LOGOUT FUNCTION ---
+  const handleLogout = () => {
+    // Only remove the ACTIVE SESSION name so we go back to login.
+    // We KEEP the history and velocity profile so the AI remembers you when you log back in.
+    localStorage.removeItem("chefName");
+    
+    // Optional: If you want to support multiple users on one device, 
+    // you would need a real database. For this MVP, we just assume "Log Out" = "Lock Screen".
+    
+    router.push("/");
+  };
 
   return (
     <Shell>
@@ -56,17 +68,34 @@ export default function HomePage() {
                   </p>
               </div>
 
-              {/* History Button */}
-              <button 
-                onClick={() => router.push("/history")}
-                className="hidden md:flex flex-col items-center gap-2 group"
-                title="View Culinary Journal"
-              >
-                <div className="w-14 h-14 bg-white border-2 border-stone-100 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-emerald-600 group-hover:border-emerald-200 shadow-sm hover:shadow-md transition-all duration-300">
-                    <History className="w-6 h-6" />
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 group-hover:text-emerald-600 transition-colors">Journal</span>
-              </button>
+              {/* ACTION BUTTONS (Journal & Logout) */}
+              <div className="flex gap-4 self-center md:self-start">
+                  
+                  {/* Journal Button */}
+                  <button 
+                    onClick={() => router.push("/history")}
+                    className="flex flex-col items-center gap-2 group"
+                    title="View Culinary Journal"
+                  >
+                    <div className="w-12 h-12 bg-white border-2 border-stone-100 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-emerald-600 group-hover:border-emerald-200 shadow-sm hover:shadow-md transition-all duration-300">
+                        <History className="w-5 h-5" />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 group-hover:text-emerald-600 transition-colors">Journal</span>
+                  </button>
+
+                  {/* --- LOGOUT BUTTON --- */}
+                  <button 
+                    onClick={handleLogout}
+                    className="flex flex-col items-center gap-2 group"
+                    title="Log Out (Keep Data)"
+                  >
+                    <div className="w-12 h-12 bg-white border-2 border-stone-100 rounded-2xl flex items-center justify-center text-stone-400 group-hover:text-red-500 group-hover:border-red-200 shadow-sm hover:shadow-md transition-all duration-300">
+                        <LogOut className="w-5 h-5 ml-1" />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 group-hover:text-red-500 transition-colors">Log Out</span>
+                  </button>
+
+              </div>
           </div>
         </header>
 
