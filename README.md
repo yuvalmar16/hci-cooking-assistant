@@ -1,4 +1,4 @@
-# 👨‍🍳 SouZie - SuChef 
+# 👨‍🍳 SouZie - SuChef
 
 **Your AI-Powered Cognitive Sous-Chef**
 
@@ -8,12 +8,12 @@ SouZie is not just another recipe generator—it’s a **Closed-Loop Kitchen Ope
 
 - [🚀 Key Features](#-key-features)
 - [📖 How to Use](#-how-to-use)
-- [🛠️ Installation](#-installation)
-- [⚙️ Configuration](#-configuration)
+- [🛠️ Installation](#️-installation)
+- [⚙️ Configuration](#️-configuration)
 - [▶️ Run the App](#️-run-the-app)
-- [🏗️ Tech Stack](#-tech-stack)
+- [🏗️ Tech Stack](#️-tech-stack)
 - [🧯 Troubleshooting & Safety](#-troubleshooting--safety)
-- [📜 License](#-license)
+
 ---
 
 ## 🚀 Key Features
@@ -24,7 +24,7 @@ SouZie is not just another recipe generator—it’s a **Closed-Loop Kitchen Ope
 
 ### 🗣️ Hands-Free Voice Orchestrator
 - **Global Command Loop**: Navigate with voice ("Next", "Back", "Start Timer").
-- **Contextual Chat ("Susie")**: Say "Hey Susie" to ask specific questions (e.g., “I dont have the instructions (for cooking rice) what are they?”).
+- **Contextual Chat ("Susie")**: Say "Hey Susie" to ask specific questions (e.g., “I don't have the instructions for cooking rice, what are they?”).
 
 ### ⚡ Smart Optimization Engine (DAG Logic)
 - Dynamically analyzes recipe dependencies.
@@ -35,16 +35,16 @@ SouZie is not just another recipe generator—it’s a **Closed-Loop Kitchen Ope
 - Real-time "Dinner Ready" countdown that adjusts based on your personal **Velocity Factor**.
 
 ### 👅 Taste Memory
-- Remembers your likes/dislikes (e.g., “Too spicy”, “Hate cilantro”," I didnt like the olives").
+- Remembers your likes/dislikes (e.g., “Too spicy”, “Hate cilantro”, "I didn't like the olives").
 - Adjusts future recipes automatically based on your Taste Profile.
 
 ### 🛡️ The Hazmat Protocol (Safety & Error Handling)
-| Error Type       | Scenario Example                             | System Response                                         |
-|------------------|-----------------------------------------------|---------------------------------------------------------|
-| **Strictly Prohibited** | "Bleach", "Poison"                          | ❌ **Hard Block** – Refuses to proceed                   |
-| **Mixed Safety**       | "Chicken, Horse Meat"                       | 🛡️ **Safety Shield** – Prompts user to remove item       |
-| **Not a Meal**         | "Ketchup", "Salt", "Water"                  | ⚔️ **Chef Intervention** – Requests a real ingredient     |
-| **Gibberish**          | Random input                               | ❓ **Confusion Prompt** – Responds humorously & retries   |
+| Error Type | Scenario Example | System Response |
+| :--- | :--- | :--- |
+| **Strictly Prohibited** | "Bleach", "Poison" | ❌ **Hard Block** – Refuses to proceed |
+| **Mixed Safety** | "Chicken, Horse Meat" | 🛡️ **Safety Shield** – Prompts user to remove item |
+| **Not a Meal** | "Ketchup", "Salt", "Water" | ⚔️ **Chef Intervention** – Requests a real ingredient |
+| **Gibberish** | Random input | ❓ **Confusion Prompt** – Responds humorously & retries |
 
 ---
 
@@ -57,14 +57,14 @@ SouZie is not just another recipe generator—it’s a **Closed-Loop Kitchen Ope
 ### 2. Input Phase
 Choose a mode:
 - **“I have ingredients”**: Enter what's in your fridge. If multiple proteins are listed, the system offers 3 dish concepts.
-- **“Paste Recipe”**: Input blog text (you can just copy and paste the enitre page). SuChef extracts clean, atomic instructions, removing ads, comments and unnecessary personal stories.
+- **“Paste Recipe”**: Input blog text (you can just copy and paste the entire page). SuChef extracts clean, atomic instructions, removing ads, comments, and unnecessary personal stories.
 
 ### 3. Cooking Mode
 - Grant microphone permissions for hands-free mode.
-- Follow large, clear instructions step-by-step.
+- Follow large, clear instructions step-by-step and estimated meal preperation time.
 - Use voice commands or tap buttons for timers.
 - Look for **Blue Box** smart tips for safe multitasking.
-- Chat with susie whenever you need. she will know your current step and what you are cooking ask whatever you'll like regarding the dish (speaking in other langauges is also optional).
+- Chat with Susie whenever you need. She will know your current step and what you are cooking—ask whatever you like regarding the dish (speaking in other languages is also optional).
 
 ### 4. Feedback Loop
 - Rate your meal and leave a comment.
@@ -73,28 +73,34 @@ Choose a mode:
 ---
 
 ## 🛠️ Installation
+
 ```bash
-git clone https://github.com/your-username/suchef.git
-cd suchef
+# 1. Clone the repository
+git clone https://github.com/yuvalmar16/hci-cooking-assistant
+
+# 2. Enter the folder created by Git
+cd hci-cooking-assistant
+
+# 3. Install the dependencies
 npm install
 ```
 
 ## ⚙️ Configuration
-
 Create a .env.local file in the root directory with your OpenAI API key:
-
 ```bash
 OPENAI_API_KEY=sk-your-api-key-here
 ```
+
 
 ## ▶️ Run the App
 ```bash
 npm run dev
 ```
-Then open http://localhost:3000
- in your browser.
 
-##🏗️ Tech Stack
+Then open http://localhost:3000 in your browser.
+
+
+## 🏗️ Tech Stack
 
 | Layer           | Tech Used                                |
 | --------------- | ---------------------------------------- |
@@ -107,15 +113,16 @@ Then open http://localhost:3000
 
 
 ## 🧯 Troubleshooting & Safety
-
-### SuChef has built-in guardrails for both user safety and performance:
-
+SuChef has built-in guardrails for both user safety and performance:
 * Refuses toxic or non-food inputs
 
-* No multitasking during high attention demanding steps
+* No multitasking during high-attention demanding steps
 
 * Clarifies vague or incomplete inputs with humor and prompts
 
 * All data stored locally for privacy
+
+
+
 
 
