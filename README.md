@@ -3,6 +3,19 @@
 **Your AI-Powered Cognitive Sous-Chef**
 
 SouZie is not just another recipe generator—it’s a **Closed-Loop Kitchen Operating System**. It transforms unstructured inputs like messy blog recipes or random fridge ingredients into dynamic, hands-free cooking workflows, powered by AI with safety-first orchestration. souzie is a web app comaptible to pc, tablets and mobile.
+<p align="center">
+  <a href="https://youtu.be/9UXll9J11Rs" target="_blank">
+    <img
+      src="https://img.youtube.com/vi/9UXll9J11Rs/maxresdefault.jpg"
+      alt="SouZie Demo Video"
+      width="800"
+    />
+  </a>
+</p>
+
+<p align="center">
+  <strong>▶ Watch the SouZie demo</strong>
+</p>
 
 ## 📋 Table of Contents
 
